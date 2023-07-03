@@ -28,7 +28,12 @@ def upload_to_neo4j(file_path, graph):
                     print(f"Skipped invalid JSON line: {line}")
                     continue
 
-        merge_nodes(graph, nodes, merge_key='id')
+        tx = graph.begin()
+        merge_nodes(tx, nodes, merge_key='id')
+        # merge_nodes docs are wrong. we still have to call create
+        for node in nodes:
+          tx.create(node)
+        graph.commit(tx)
 
 @app.route('/upload')
 def upload_form():
