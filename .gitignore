@@ -1,0 +1,12 @@
+.*
+!.devcontainer
+!.editorconfig
+!.envrc
+!.github
+!.gitignore
+!.vscode
+
+neo4j
+result
+target
+upload
