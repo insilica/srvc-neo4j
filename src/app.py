@@ -2,39 +2,33 @@ from flask import Flask, request, render_template
 from jsonlines.jsonlines import InvalidLineError
 from werkzeug.utils import secure_filename
 from py2neo import Graph, Node, Relationship
+from py2neo.bulk import merge_nodes
+from uuid import uuid4
 import json, jsonlines, os, uuid
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = '/app/upload'  # Set to a valid path
 
-def create_node(graph, data, parent=None, relationship_name=None):
-    if isinstance(data, dict):
-        node = Node('Object', id=str(uuid.uuid4()), json_data=json.dumps(data), type=data.get('type'), uri=data.get('uri'))
-        graph.create(node)
-
-        if parent is not None:
-            relationship = Relationship(parent, relationship_name, node)
-            graph.create(relationship)
-
-        for k, v in data.items():
-            if isinstance(v, (dict, list)):
-                create_node(graph, v, parent=node, relationship_name=k)
-
-    elif isinstance(data, list):
-        for i, item in enumerate(data):
-            create_node(graph, item, parent=parent, relationship_name=f"{relationship_name}_{i}")
+def create_object(data):
+    node = Node('Object', id=str(uuid4()), json_data=json.dumps(data), type=data.get('type'), uri=data.get('uri'))
+    return node
 
 def upload_to_neo4j(file_path, graph):
     with open(file_path, 'r') as f:
+        nodes = []
         for line in f:
             line = line.strip()  # remove leading/trailing whitespace
             if line:  # skip blank lines
                 try:
-                    data = json.loads(line)  # try to parse line as JSON
-                    create_node(graph, data)
+                    data = json.loads(line) # try to parse line as JSON
+                    node = create_object(data)
+                    nodes.append(node)
+
                 except json.JSONDecodeError:
                     print(f"Skipped invalid JSON line: {line}")
                     continue
+
+        merge_nodes(graph, nodes, merge_key='id')
 
 @app.route('/upload')
 def upload_form():
