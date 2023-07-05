@@ -1,13 +1,5 @@
 version: '3'
 services:
-  web:
-    build: .
-    ports:
-      - "5000:80"
-    volumes:
-      - .:/app
-    depends_on:
-      - neo4j
   neo4j:
     image: neo4j:latest
     ports:
@@ -18,3 +10,28 @@ services:
       - ./neo4j/logs:/logs
     environment:
       - NEO4J_AUTH=neo4j/test1234
+
+  # Individual services
+  document:
+    build: ./document
+    volumes:
+      - ./document:/app
+    depends_on:
+      - neo4j
+  upload:
+    build: ./upload
+    volumes:
+      - ./upload:/app
+    depends_on:
+      - neo4j
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "5000:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - document
+      - review
+      - upload

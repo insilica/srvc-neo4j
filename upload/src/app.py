@@ -7,7 +7,9 @@ from uuid import uuid4
 import json, jsonlines, os, uuid
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = '/app/upload'  # Set to a valid path
+app.config['UPLOAD_FOLDER'] = '/tmp/srvc-upload'
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def create_object(data):
     node = Node('Object', id=str(uuid4()), json_data=json.dumps(data), type=data.get('type'), uri=data.get('uri'))
@@ -39,7 +41,6 @@ def upload_to_neo4j(file_path, graph):
 def upload_form():
     return render_template('upload.html')
 
-# Excruciatingly slow
 @app.route('/uploader', methods=['POST'])
 def upload_file():
     if request.method == 'POST':
@@ -52,19 +53,6 @@ def upload_file():
         upload_to_neo4j(file_path, graph)
 
         return 'file uploaded successfully'
-
-@app.route('/documents')
-def list_documents():
-    graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
-    documents = graph.run("""
-    MATCH (o:Object {type: "document"})
-    RETURN o.uri AS uri, o.json_data AS json_data
-    """).data()
-
-    for document in documents:
-        document['json_data'] = json.loads(document['json_data'])
-
-    return render_template('documents.html', documents=documents)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')  # Ensure the server is accessible externally
