@@ -18,6 +18,12 @@ services:
       - ./document:/app
     depends_on:
       - neo4j
+  review:
+    build: ./review
+    volumes:
+      - ./review:/app
+    depends_on:
+      - neo4j
   upload:
     build: ./upload
     volumes:

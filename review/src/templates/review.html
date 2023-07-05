@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  font-family: Arial, sans-serif;
+}
+
+.sidebar {
+  float: left;
+  width: 30%;
+  height: 100vh;
+  background-color: #f0f0f0;
+  padding: 20px;
+}
+
+.main-content {
+  float: right;
+  width: 60%;
+  padding: 20px;
+}
+</style>
+</head>
+<body>
+  <div class="sidebar">
+    <form target="/review" method="post">
+      <input type="hidden" id="doc-id" name="doc-id" value="{{ document['id'] }}">
+      {% for label in labels %}
+        <label for="label-{{ label['id'] }}">{{ label['question'] }}:</label><br>
+        {% if label['type'] == 'boolean' %}
+          <input type="checkbox" id="label-{{ label['id'] }}" name="label-{{ label['id'] }}"><br>
+        {% elif label['type'] == 'text' %}
+          <input type="text" id="label-{{ label['id'] }}" name="label-{{ label['id'] }}"><br>
+        {% endif %}
+      {% endfor %}
+      <input type="submit" value="Save">
+    </form>
+  </div>
+
+  <div class="main-content">
+    <h2>{{ document['json_data']['data']['title'] }}</h2>
+    {% if document['uri'] %}
+      <a href="{{ document['uri'] }}">{{ document['uri'] }}</a>
+    {% endif %}
+    <p>{{ document['json_data']['data']['abstract'] }}</p>
+  </div>
+</body>
+</html>

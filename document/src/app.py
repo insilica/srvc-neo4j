@@ -12,12 +12,15 @@ app = Flask(__name__)
 def list_documents():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     documents = graph.run("""
-    MATCH (o:Object {type: "document"})
-    RETURN o.uri AS uri, o.json_data AS json_data
+    MATCH (d:Object {type: "document"})
+    OPTIONAL MATCH (d)<-[:HAS_EVENT]-(a:Object {type: "label-answer"})-[:HAS_LABEL]->(l:Object)
+    RETURN d.uri AS uri, d.json_data AS json_data,
+           collect({label: l, answer: a}) AS label_answers
     """).data()
 
     for document in documents:
         document['json_data'] = json.loads(document['json_data'])
+        document['label_answers'] = [(x['label'], x['answer']) for x in document['label_answers'] if x['label'] and x['answer']]
 
     return render_template('documents.html', documents=documents)
 
