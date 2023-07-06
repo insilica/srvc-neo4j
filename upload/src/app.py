@@ -1,4 +1,6 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify, redirect, url_for
+from flask import send_from_directory
+
 from jsonlines.jsonlines import InvalidLineError
 from werkzeug.utils import secure_filename
 from py2neo import Graph, Node, Relationship
@@ -7,52 +9,75 @@ from uuid import uuid4
 import json, jsonlines, os, uuid
 
 app = Flask(__name__)
+
 app.config['UPLOAD_FOLDER'] = '/tmp/srvc-upload'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-def create_object(data):
-    node = Node('Object', id=str(uuid4()), json_data=json.dumps(data), type=data.get('type'), uri=data.get('uri'))
-    return node
+def create_nodes(data, filename):
+    document = Node('document', id=str(uuid4()), json_data=json.dumps(data), type=data.get('type'), uri=data.get('uri'))
+    document_source = Node('document_source', name=filename)
+    rel = Relationship(document_source, 'SOURCE_OF', document)
+    return document, document_source, rel
 
-def upload_to_neo4j(file_path, graph):
+def upload_to_neo4j(file_path, filename, graph):
     with open(file_path, 'r') as f:
-        nodes = []
+        documents = []
+        document_sources = []
+        rels = []
         for line in f:
             line = line.strip()  # remove leading/trailing whitespace
             if line:  # skip blank lines
                 try:
                     data = json.loads(line) # try to parse line as JSON
-                    node = create_object(data)
-                    nodes.append(node)
+                    document, document_source, rel = create_nodes(data, filename)
+                    documents.append(document)
+                    document_sources.append(document_source)
+                    rels.append(rel)
 
                 except json.JSONDecodeError:
                     print(f"Skipped invalid JSON line: {line}")
                     continue
 
         tx = graph.begin()
-        merge_nodes(tx, nodes, merge_key='id')
-        # merge_nodes docs are wrong. we still have to call create
-        for node in nodes:
-          tx.create(node)
+        for document, document_source, rel in zip(documents, document_sources, rels):
+            tx.merge(document_source, "document_source", "name")
+            tx.merge(document, "document", "id")
+            tx.create(rel)
         graph.commit(tx)
 
+def delete_from_neo4j(source_name, graph):
+    # delete relationships first
+    graph.run("MATCH (s:document_source)-[r:SOURCE_OF]->(d:document) WHERE s.name = $name DELETE r", name=source_name)
+    graph.run("MATCH (s:document_source)-[:SOURCE_OF]->(d:document) WHERE s.name = $name DELETE s, d", name=source_name)
+    
 @app.route('/upload')
-def upload_form():
-    return render_template('upload.html')
+def upload():
+    graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+    result = graph.run("MATCH (s:document_source)-[:SOURCE_OF]->(d:document) RETURN s.name as source, count(d) as documents").data()
+    return render_template('upload.html', sources=result)
 
-@app.route('/uploader', methods=['POST'])
+@app.route('/upload/source', methods=['POST'])
 def upload_file():
     if request.method == 'POST':
         f = request.files['file']
         filename = secure_filename(f.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        f.save(file_path)
+        f.save(file_path) # TODO we probably need a better way to persist files
 
         graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
-        upload_to_neo4j(file_path, graph)
+        upload_to_neo4j(file_path, filename, graph)
+        
+        return redirect(url_for('upload'))
 
-        return 'file uploaded successfully'
+@app.route('/upload/delete/<source_name>', methods=['POST'])
+def delete_source(source_name):
+    if request.method == 'POST':
+        graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+        delete_from_neo4j(source_name, graph)
+        
+        return redirect(url_for('upload'))
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')  # Ensure the server is accessible externally

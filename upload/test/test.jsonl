@@ -1,0 +1,6 @@
+{"type": "article", "uri": "http://example.com/article/1", "content": "This is an article about AI."}
+{"type": "blog", "uri": "http://example.com/blog/1", "content": "This is a blog post about machine learning."}
+{"type": "news", "uri": "http://example.com/news/1", "content": "This is a news article about data science."}
+{"type": "article", "uri": "http://example.com/article/2", "content": "This is another article about AI."}
+{"type": "blog", "uri": "http://example.com/blog/2", "content": "This is another blog post about machine learning."}
+{"type": "news", "uri": "http://example.com/news/2", "content": "This is another news article about data science."}
