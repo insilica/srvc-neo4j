@@ -11,19 +11,20 @@ services:
     environment:
       - NEO4J_AUTH=neo4j/test1234
 
-  # Individual services
   document:
     build: ./document
     volumes:
       - ./document:/app
     depends_on:
       - neo4j
+
   review:
     build: ./review
     volumes:
       - ./review:/app
     depends_on:
       - neo4j
+
   upload:
     build: ./upload
     volumes:
@@ -31,13 +32,36 @@ services:
     depends_on:
       - neo4j
 
+  ui:
+    build: ./ui
+    volumes:
+      - ./ui:/app
+    depends_on:
+      - document
+      - neo4j
+      - review
+      - upload
+    environment:
+      - DOCUMENT_PORT=${DOCUMENT_PORT}
+      - REVIEW_PORT=${REVIEW_PORT}
+      - UI_PORT=${UI_PORT}
+      - UPLOAD_PORT=${UPLOAD_PORT}
+
   nginx:
     image: nginx:latest
     ports:
-      - "5000:80"
+      - "${DOCUMENT_PORT}:${DOCUMENT_PORT}"
+      - "${REVIEW_PORT}:${REVIEW_PORT}"
+      - "${UI_PORT}:${UI_PORT}"
+      - "${UPLOAD_PORT}:${UPLOAD_PORT}"
     volumes:
       - ./nginx:/etc/nginx/conf.d
+      - ./nginx/default.conf.template:/etc/nginx/conf.d/default.conf.template
     depends_on:
-      - document
-      - review
-      - upload
+      - ui
+    command: /bin/bash -c "envsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+    environment:
+      - DOCUMENT_PORT=${DOCUMENT_PORT}
+      - REVIEW_PORT=${REVIEW_PORT}
+      - UI_PORT=${UI_PORT}
+      - UPLOAD_PORT=${UPLOAD_PORT}

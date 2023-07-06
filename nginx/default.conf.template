@@ -1,0 +1,35 @@
+server {
+  listen ${DOCUMENT_PORT};
+  server_name document.srvc.ai;
+
+  location / {
+    proxy_pass http://document:5000;
+  }
+}
+
+server {
+  listen ${REVIEW_PORT};
+  server_name review.srvc.ai;
+
+  location / {
+    proxy_pass http://review:5000;
+  }
+}
+
+server {
+  listen ${UI_PORT};
+  server_name ui.srvc.ai;
+
+  location / {
+    proxy_pass http://ui:5000;
+  }
+}
+
+server {
+  listen ${UPLOAD_PORT};
+  server_name upload.srvc.ai;
+
+  location / {
+    proxy_pass http://upload:5000;
+  }
+}

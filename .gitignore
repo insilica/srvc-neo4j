@@ -1,6 +1,7 @@
 .*
 !.devcontainer
 !.editorconfig
+!.env
 !.envrc
 !.github
 !.gitignore
@@ -10,3 +11,5 @@ __pycache__
 neo4j
 result
 target
+
+nginx/default.conf

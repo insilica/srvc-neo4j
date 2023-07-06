@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>srvc.ai</title>
+  <style>
+  body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
+  .tabs {
+    display: flex;
+    justify-content: start;
+    background: #f9f9f9;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  .tab {
+    padding: 10px;
+    border: 1px solid #cccccc;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  .tab.active {
+    background: #cccccc;
+  }
+  .main {
+    padding: 10px;
+    box-sizing: border-box;
+    height: calc(100% - 40px); /* subtract the space taken up by the tabs and padding */
+  }
+  iframe {
+    width: 100%;
+    height: calc(100% - 20px); /* subtract the space taken up by the h2 */
+    border: none;
+  }
+  .tab-content {
+    display: none;
+    height: 100%;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+  <div class="tabs">
+    <div class="tab active" data-tab="document">Documents</div>
+    <div class="tab" data-tab="review">Review</div>
+    <div class="tab" data-tab="upload">Upload</div>
+  </div>
+
+  <div class="main">
+    <div id="document" class="tab-content active">
+      <iframe src="http://localhost:{{ document_port }}/document"></iframe>
+    </div>
+
+    <div id="review" class="tab-content">
+      <iframe src="http://localhost:{{ review_port }}/review"></iframe>
+    </div>
+
+    <div id="upload" class="tab-content">
+      <iframe src="http://localhost:{{ upload_port }}/upload"></iframe>
+    </div>
+  </div>
+
+  <script>
+    $('.tab').on('click', function() {
+      $('.tab').removeClass('active');
+      $('.tab-content').removeClass('active');
+
+      $(this).addClass('active');
+      $('#' + $(this).data('tab')).addClass('active');
+    });
+  </script>
+</body>
+</html>
