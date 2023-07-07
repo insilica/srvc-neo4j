@@ -8,6 +8,7 @@
 !.vscode
 
 __pycache__
+jena
 neo4j
 result
 target

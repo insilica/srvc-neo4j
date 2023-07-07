@@ -1,36 +1,36 @@
 version: '3'
 services:
-  neo4j:
-    image: neo4j:latest
+  jena:
+    image: stain/jena-fuseki
     ports:
-      - "7474:7474"
-      - "7687:7687"
+      - "3030:3030"
     volumes:
-      - ./neo4j/data:/data
-      - ./neo4j/logs:/logs
+      - ./jena/data:/fuseki/data
     environment:
-      - NEO4J_AUTH=neo4j/test1234
+      - ADMIN_PASSWORD=test1234
+      - JVM_ARGS=-Xmx2g
+      - TDB=2
 
   document:
     build: ./document
     volumes:
       - ./document:/app
     depends_on:
-      - neo4j
+      - jena
 
   review:
     build: ./review
     volumes:
       - ./review:/app
     depends_on:
-      - neo4j
+      - jena
 
   upload:
     build: ./upload
     volumes:
       - ./upload:/app
     depends_on:
-      - neo4j
+      - jena
 
   ui:
     build: ./ui
@@ -38,7 +38,7 @@ services:
       - ./ui:/app
     depends_on:
       - document
-      - neo4j
+      - jena
       - review
       - upload
     environment:
