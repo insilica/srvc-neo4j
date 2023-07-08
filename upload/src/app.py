@@ -47,10 +47,11 @@ def upload_to_neo4j(file_path, filename, graph):
         graph.commit(tx)
 
 def delete_from_neo4j(source_name, graph):
-    # delete relationships first
-    # TODO this looks wrong to me. We should delete the source, and the dangling documents.
-    graph.run("MATCH (s:document_source)-[r:SOURCE_OF]->(d:document) WHERE s.name = $name DELETE r", name=source_name)
-    graph.run("MATCH (s:document_source)-[:SOURCE_OF]->(d:document) WHERE s.name = $name DELETE s, d", name=source_name)
+    # delete source and connected docs
+    graph.run("MATCH (s:document_source)-[r:SOURCE_OF]->(d:document) WHERE s.name = $name DELETE r, s, d", name=source_name)
+    
+    # delete all remaining documents with no relationship to any source
+    graph.run("MATCH (d:document) WHERE NOT (d)<-[:SOURCE_OF]-(:document_source) DELETE d")
     
 @app.route('/upload')
 def upload():
