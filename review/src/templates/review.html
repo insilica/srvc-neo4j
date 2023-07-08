@@ -38,11 +38,7 @@ body {
   </div>
 
   <div class="main-content">
-    <h2>{{ document['json_data']['data']['title'] }}</h2>
-    {% if document['uri'] %}
-      <a href="{{ document['uri'] }}">{{ document['uri'] }}</a>
-    {% endif %}
-    <p>{{ document['json_data']['data']['abstract'] }}</p>
+    <pre>{{ document | tojson(indent=2) }}</pre>
   </div>
 </body>
 </html>

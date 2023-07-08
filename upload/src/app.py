@@ -15,8 +15,8 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def create_nodes(data, filename):
-    document = Node('document', id=str(uuid4()), json_data=json.dumps(data), type=data.get('type'), uri=data.get('uri'))
-    document_source = Node('document_source', name=filename)
+    document = Node('Document', id=str(uuid4()), json_data=json.dumps(data), type=data.get('type'), uri=data.get('uri'))
+    document_source = Node('DocumentSource', name=filename)
     rel = Relationship(document_source, 'SOURCE_OF', document)
     return document, document_source, rel
 
@@ -41,22 +41,22 @@ def upload_to_neo4j(file_path, filename, graph):
 
         tx = graph.begin()
         for document, document_source, rel in zip(documents, document_sources, rels):
-            tx.merge(document_source, "document_source", "name")
-            tx.merge(document, "document", "id")
+            tx.merge(document_source, "DocumentSource", "name")
+            tx.merge(document, "Document", "id")
             tx.create(rel)
         graph.commit(tx)
 
 def delete_from_neo4j(source_name, graph):
     # delete source and connected docs
-    graph.run("MATCH (s:document_source)-[r:SOURCE_OF]->(d:document) WHERE s.name = $name DELETE r, s, d", name=source_name)
+    graph.run("MATCH (s:DocumentSource)-[r:SOURCE_OF]->(d:Document) WHERE s.name = $name DELETE r, s, d", name=source_name)
     
     # delete all remaining documents with no relationship to any source
-    graph.run("MATCH (d:document) WHERE NOT (d)<-[:SOURCE_OF]-(:document_source) DELETE d")
+    graph.run("MATCH (d:Document) WHERE NOT (d)<-[:SOURCE_OF]-(:DocumentSource) DELETE d")
     
-@app.route('/upload')
+@app.route('/')
 def upload():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
-    result = graph.run("MATCH (s:document_source)-[:SOURCE_OF]->(d:document) RETURN s.name as source, count(d) as documents").data()
+    result = graph.run("MATCH (s:DocumentSource)-[:SOURCE_OF]->(d:Document) RETURN s.name as source, count(d) as documents").data()
     return render_template('upload.html', sources=result)
 
 @app.route('/upload/source', methods=['POST'])

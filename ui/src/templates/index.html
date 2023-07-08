@@ -47,9 +47,11 @@
 </head>
 <body>
   <div class="tabs">
-    <div class="tab active" data-tab="document">Documents</div>
+    <div class="tab active" data-tab="upload">Upload</div>
+    <div class="tab" data-tab="document">Documents</div>
     <div class="tab" data-tab="review">Review</div>
-    <div class="tab" data-tab="upload">Upload</div>
+    <div class="tab" data-tab="labels">Labels</div>
+    <div class="tab" data-tab="settings">Settings</div>
   </div>
 
   <div class="main">
@@ -62,7 +64,15 @@
     </div>
 
     <div id="upload" class="tab-content">
-      <iframe src="http://localhost:{{ upload_port }}/upload"></iframe>
+      <iframe src="http://localhost:{{ upload_port }}/"></iframe>
+    </div>
+
+    <div id="labels" class="tab-content">
+      <iframe src="http://localhost:{{ labels_port }}/"></iframe>
+    </div>
+
+    <div id="settings" class="tab-content">
+      <iframe src="http://localhost:{{ settings_port }}/"></iframe>
     </div>
   </div>
 

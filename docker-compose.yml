@@ -25,6 +25,20 @@ services:
     depends_on:
       - neo4j
 
+  labels:
+    build: ./labels
+    volumes:
+      - ./labels:/app
+    depends_on:
+      - neo4j
+    
+  settings:
+    build: ./settings
+    volumes:
+      - ./settings:/app
+    depends_on:
+      - neo4j
+
   upload:
     build: ./upload
     volumes:
@@ -45,6 +59,7 @@ services:
       - DOCUMENT_PORT=${DOCUMENT_PORT}
       - REVIEW_PORT=${REVIEW_PORT}
       - UI_PORT=${UI_PORT}
+      - LABELS_PORT=${LABELS_PORT}
       - UPLOAD_PORT=${UPLOAD_PORT}
 
   nginx:
@@ -53,6 +68,7 @@ services:
       - "${DOCUMENT_PORT}:${DOCUMENT_PORT}"
       - "${REVIEW_PORT}:${REVIEW_PORT}"
       - "${UI_PORT}:${UI_PORT}"
+      - "${LABELS_PORT}:${LABELS_PORT}"
       - "${UPLOAD_PORT}:${UPLOAD_PORT}"
     volumes:
       - ./nginx:/etc/nginx/conf.d
@@ -64,4 +80,5 @@ services:
       - DOCUMENT_PORT=${DOCUMENT_PORT}
       - REVIEW_PORT=${REVIEW_PORT}
       - UI_PORT=${UI_PORT}
+      - LABELS_PORT=${LABELS_PORT}
       - UPLOAD_PORT=${UPLOAD_PORT}

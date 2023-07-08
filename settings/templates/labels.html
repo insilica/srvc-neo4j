@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Label Editor</title>
+</head>
+<body>
+    <h1>Label Editor</h1>
+    <form method="post">
+        <label for="id">Label ID:</label><br>
+        <input type="text" id="id" name="id"><br>
+        <label for="question">Question:</label><br>
+        <input type="text" id="question" name="question"><br>
+        <label for="type">Type:</label><br>
+        <select id="type" name="type">
+            <option value="text">Text</option>
+            <option value="boolean">Boolean</option>
+        </select><br>
+        <input type="submit" value="Save">
+    </form>
+    <hr>
+    <h2>Existing Labels</h2>
+    {% for label in labels %}
+        <p>ID: {{label.id}}, Question: {{label.question}}, Type: {{label.type}}</p>
+    {% endfor %}
+</body>
+</html>
