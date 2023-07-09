@@ -55,16 +55,17 @@
   </div>
 
   <div class="main">
-    <div id="document" class="tab-content active">
+
+    <div id="upload" class="tab-content active">
+      <iframe src="http://localhost:{{ upload_port }}/"></iframe>
+    </div>
+
+    <div id="document" class="tab-content">
       <iframe src="http://localhost:{{ document_port }}/document"></iframe>
     </div>
 
     <div id="review" class="tab-content">
       <iframe src="http://localhost:{{ review_port }}/review"></iframe>
-    </div>
-
-    <div id="upload" class="tab-content">
-      <iframe src="http://localhost:{{ upload_port }}/"></iframe>
     </div>
 
     <div id="labels" class="tab-content">
