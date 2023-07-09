@@ -51,10 +51,11 @@ services:
     volumes:
       - ./ui:/app
     depends_on:
-      - document
       - neo4j
-      - review
       - upload
+      - document
+      - review
+      - settings
     environment:
       - DOCUMENT_PORT=${DOCUMENT_PORT}
       - REVIEW_PORT=${REVIEW_PORT}
