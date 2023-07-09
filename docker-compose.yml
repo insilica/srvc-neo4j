@@ -60,6 +60,7 @@ services:
       - REVIEW_PORT=${REVIEW_PORT}
       - UI_PORT=${UI_PORT}
       - LABELS_PORT=${LABELS_PORT}
+      - SETTINGS_PORT=${SETTINGS_PORT}
       - UPLOAD_PORT=${UPLOAD_PORT}
 
   nginx:
@@ -69,6 +70,7 @@ services:
       - "${REVIEW_PORT}:${REVIEW_PORT}"
       - "${UI_PORT}:${UI_PORT}"
       - "${LABELS_PORT}:${LABELS_PORT}"
+      - "${SETTINGS_PORT}:${SETTINGS_PORT}"
       - "${UPLOAD_PORT}:${UPLOAD_PORT}"
     volumes:
       - ./nginx:/etc/nginx/conf.d
@@ -81,4 +83,5 @@ services:
       - REVIEW_PORT=${REVIEW_PORT}
       - UI_PORT=${UI_PORT}
       - LABELS_PORT=${LABELS_PORT}
+      - SETTINGS_PORT=${SETTINGS_PORT}
       - UPLOAD_PORT=${UPLOAD_PORT}

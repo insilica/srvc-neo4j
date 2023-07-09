@@ -57,10 +57,8 @@ def get_unreviewed_document():
     q += " WHERE NOT EXISTS ((o)<-[:HAS_DOCUMENT]-(:Answer))"
     q += " RETURN o.id AS id, o.uri AS uri, o.json_data AS jsonData"
     documents = graph.run(q).data()
-
     for document in documents:
         document['jsonData'] = json.loads(document['jsonData'])
-
     return documents[0] if documents else None
 
 @app.route('/review')

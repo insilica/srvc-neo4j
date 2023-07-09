@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings</title>
+</head>
+<body>
+    <div style="display: flex;">
+        <div style="flex: 25%;">
+            <nav>
+                <ul>
+                    <li><a href="#general">General</a></li>
+                    <!-- Add more settings categories here -->
+                </ul>
+            </nav>
+        </div>
+        <div style="flex: 75%;">
+            <div id="general">
+                <h2>General Settings</h2>
+                <form method="POST">
+                    <label for="key">Setting Key</label><br>
+                    <input type="text" id="key" name="key"><br>
+                    <label for="value">Setting Value</label><br>
+                    <input type="text" id="value" name="value"><br>
+                    <input type="submit" value="Submit">
+                </form>
+            </div>
+            <!-- Add more settings forms here -->
+            <hr>
+            <div>
+                <h2>Current Settings</h2>
+                <ul>
+                    {% for setting in settings %}
+                        <li>{{ setting.key }}: {{ setting.value }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

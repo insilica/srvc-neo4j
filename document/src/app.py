@@ -8,15 +8,14 @@ import json, jsonlines, os, uuid
 
 app = Flask(__name__)
 
-@app.route('/document')
+@app.route('/')
 def list_documents():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
-    documents = graph.run("""
-    MATCH (d:Object {type: "document"})
-    OPTIONAL MATCH (d)<-[:HAS_EVENT]-(a:Object {type: "label-answer"})-[:HAS_LABEL]->(l:Object)
-    RETURN d.uri AS uri, d.json_data AS json_data,
-           collect({label: l, answer: a}) AS label_answers
-    """).data()
+    q = "MATCH (o:Document)"
+    q = f"{q} OPTIONAL MATCH (d)<-[:HAS_DOCUMENT]-(a:Answer)-[:HAS_LABEL]->(l:Label)"
+    q = f"{q} RETURN d.uri AS uri, d.json_data AS json_data,"
+    q = f"{q} collect({{label: l, answer: a}}) AS label_answers"
+    documents = graph.run(q).data()
 
     for document in documents:
         document['json_data'] = json.loads(document['json_data'])

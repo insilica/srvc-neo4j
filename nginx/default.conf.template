@@ -42,3 +42,12 @@ server {
     proxy_pass http://labels:5000;
   }
 }
+
+server {
+  listen ${SETTINGS_PORT};
+  server_name settings.srvc.ai;
+
+  location / {
+    proxy_pass http://settings:5000;
+  }
+}
