@@ -15,84 +15,91 @@
     box-sizing: border-box;
     flex-grow: 1;  /* This allows the main area to take up the rest of the space */
   }
-  iframe {
-    width: 100%;
-    border: none;
-    overflow: hidden; /* Prevent scrollbar */
+  #tabsComponent{
+    /* Reset/Override body styles for the sidebar */
+    all: initial;
+    /* Now apply your custom styles for the sidebar */
+    padding: 10px;
+    font-family: Verdana;
+    background-color: white;
   }
   </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   {{extra_head|safe}}
 </head>
 <body>
-  <iframe id="menuFrame" srcdoc="
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      .tabs {
-        display: flex;
-        justify-content: start;
-        background: #f9f9f9;
-        padding: 10px;
-        box-sizing: border-box;
-      }
-      .tab {
-        padding: 10px;
-        border: 1px solid #cccccc;
-        margin-right: 10px;
-        cursor: pointer;
-      }
-      .tab.active {
-        background: #cccccc;
-      }
-      </style>
-      <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
-    </head>
-    <body>
-      <div class='tabs'>
-        <div class='tab' data-tab='upload' data-url='{{upload_path}}'>Upload</div>
-        <div class='tab' data-tab='document' data-url='{{document_path}}'>Documents</div>
-        <div class='tab' data-tab='review' data-url='{{review_path}}'>Review</div>
-        <div class='tab' data-tab='labels' data-url='{{labels_path}}'>Labels</div>
-        <div class='tab' data-tab='settings' data-url='{{settings_path}}'>Settings</div>
-      </div>
-      <script>
-        $(function() {
-          var currentPath = window.parent.location.pathname;
-          $('.tab').each(function() {
-            var tabUrl = $(this).data('url');
-            if (currentPath.startsWith(tabUrl)) {
-              $('.tab').removeClass('active');
-              $(this).addClass('active');
-            }
-          });
-
-          $('.tab').on('click', function() {
-            $('.tab').removeClass('active');
-            $(this).addClass('active');
-            window.parent.location.href = $(this).data('url');
-          });
-        });
-      </script>
-    </body>
-    </html>
-  "></iframe>
 
   <div class="main">
     {{content|safe}}
   </div>
 
   <script>
-    $(function() {
-      // Adjust the height of the iframe to fit its content
-      var iframe = document.getElementById('menuFrame');
-      iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+    document.addEventListener("DOMContentLoaded", function() {
+      // Create navbar
+      const navbar = document.createElement('div');
+      navbar.style.all = 'initial';
+      navbar.style.position = 'fixed';
+      navbar.style.left = '0';
+      navbar.style.top = '0';
+      navbar.style.width = '100%';
+      navbar.style.backgroundColor = '#f9f9f9';
+      navbar.style.boxSizing = 'border-box';
+      navbar.style.padding = '10px';
+      navbar.style.display = 'flex';
+      navbar.style.justifyContent = 'start';
+      navbar.style.overflow = 'auto';
+    
+      // Create links (tabs)
+      const links = [
+        {name: 'Upload', url: '{{upload_path}}'},
+        {name: 'Document', url: '{{document_path}}'},
+        {name: 'Review', url: '{{review_path}}'},
+        {name: 'Labels', url: '{{labels_path}}'},
+        {name: 'Settings', url: '{{settings_path}}'},
+      ];
+      
+      const pathParts = window.location.pathname.split('/');
+      const activeTabName = pathParts.length >= 3 ? pathParts[3] : '';  // Get the 3rd child of the url
+    
+      links.forEach(link => {
+        const tab = document.createElement('div');
+        tab.className = 'tab';
+        tab.style.padding = '10px';
+        tab.style.border = '1px solid #cccccc';
+        tab.style.cursor = 'pointer';
+        tab.style.marginRight = '10px';
+        tab.innerText = link.name;
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          window.location.href = link.url;
+        });
+        navbar.appendChild(tab);
+        
+        if (link.name.toLowerCase() === activeTabName) {  // Check if the link name matches the 3rd child of the url
+          tab.classList.add('active');  // If so, set this tab as active
+        }
+      });
+    
+      // Append navbar to the body
+      document.body.appendChild(navbar);
+    
+      // Adjust the rest of the body to not be overlapped by navbar
+      document.body.style.paddingTop = '60px';  // adjust this value based on the height of your navbar
+    
+      // Adding styles for hover and active states
+      const style = document.createElement('style');
+      style.innerHTML = `
+        .tab:hover {
+          background-color: #ddd;  // change color on hover
+        }
+        .tab.active {
+          background-color: #cccccc;  // change color for active tab
+        }
+      `;
+      document.head.appendChild(style);
     });
-  </script>
+    
+    </script>
 </body>
 </html>
