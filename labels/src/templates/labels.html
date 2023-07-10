@@ -52,6 +52,17 @@
             document.getElementById("form-header").innerText = "Edit Label";
             document.getElementById("create-form").style.display = "block";
         }
+
+        function newForm(){
+            document.getElementById("id").value = "";
+            document.getElementById("name").value = "";
+            document.getElementById("description").value = "";
+            document.getElementById("type").value = "";
+
+            document.getElementById("form-header").innerText = "Edit Label";
+            document.getElementById("create-form").style.display = "block";
+        }
+
     </script>
 </head>
 <body>
@@ -76,7 +87,7 @@
                 </tr>
             {% endfor %}
             <tr>
-                <td><button onclick="document.getElementById('create-form').style.display = 'block'">+</button></td>
+                <td><button onclick="newForm()">+</button></td>
                 <td colspan="4"></td>
             </tr>
         </tbody>
@@ -91,6 +102,7 @@
         <label for="type">Type</label><br>
         <input type="text" id="type" name="type" required><br>
         <input type="submit" value="Submit">
+        <input type="submit" value="Cancel" onclick="document.getElementById('create-form').style.display = 'none'; return false;">
     </form>
 </body>
 </html>
