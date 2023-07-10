@@ -2,38 +2,49 @@
 <html>
 <head>
     <title>Settings</title>
+    <script>
+        function generateInviteLink() {
+            fetch('/generate_invite_link')
+                .then(response => response.json())
+                .then(data => {
+                    let inviteLinkControl = document.getElementById("invite_link");
+                    inviteLinkControl.value = data.invite_link;
+                    inviteLinkControl.select();
+                    document.execCommand("copy");
+                });
+        }
+    </script>
 </head>
 <body>
     <div style="display: flex;">
         <div style="flex: 25%;">
             <nav>
                 <ul>
-                    <li><a href="#general">General</a></li>
-                    <!-- Add more settings categories here -->
+                    {% for group in settings_group %}
+                        <li><a href="#{{ group.name }}">{{ group.name }}</a></li>
+                    {% endfor %}
                 </ul>
             </nav>
         </div>
         <div style="flex: 75%;">
-            <div id="general">
-                <h2>General Settings</h2>
-                <form method="POST">
-                    <label for="key">Setting Key</label><br>
-                    <input type="text" id="key" name="key"><br>
-                    <label for="value">Setting Value</label><br>
-                    <input type="text" id="value" name="value"><br>
-                    <input type="submit" value="Submit">
-                </form>
-            </div>
-            <!-- Add more settings forms here -->
-            <hr>
-            <div>
-                <h2>Current Settings</h2>
-                <ul>
+            {% for group in settings_group %}
+                <div id="{{ group.name }}">
+                    <h2>{{ group.name }} Settings</h2>
                     {% for setting in settings %}
-                        <li>{{ setting.key }}: {{ setting.value }}</li>
+                        {% if setting.group == group.name %}
+                            {% if setting.key != 'invite_link' %}
+                                <label for="{{ setting.key }}">{{ setting.key }}</label><br>
+                                <input type="text" id="{{ setting.key }}" name="{{ setting.key }}" value="{{ setting.value }}"><br>
+                            {% else %}
+                                <label for="{{ setting.key }}">{{ setting.key }}</label><br>
+                                <input type="text" id="{{ setting.key }}" name="{{ setting.key }}" value="{{ setting.value }}" readonly><br>
+                                <button onclick="generateInviteLink()">Generate and Copy Invite Link</button><br>
+                            {% endif %}
+                        {% endif %}
                     {% endfor %}
-                </ul>
-            </div>
+                </div>
+                <hr>
+            {% endfor %}
         </div>
     </div>
 </body>
