@@ -3,42 +3,144 @@
 <head>
 <style>
 body {
-  font-family: Arial, sans-serif;
+  background-color: #1a1a1a;
+  color: #e6e6e6;
+  font-family: 'Ubuntu Mono', monospace;
+  margin: 0;
+  padding: 20px 20px 40px;
 }
 
 .sidebar {
   float: left;
   width: 30%;
   height: 100vh;
-  background-color: #f0f0f0;
+  background-color: #333;
   padding: 20px;
+  box-sizing: border-box;
 }
 
 .main-content {
   float: right;
-  width: 60%;
+  width: 65%; /* Increase width */
   padding: 20px;
+  background-color: #333;
+  color: #e6e6e6;
+  box-sizing: border-box;
+  margin-left: 5px; /* Decrease margin */
+}
+  
+
+input[type=text] {
+  width: 100%;
+  padding: 6px 10px;
+  margin: 2px 0;
+  background-color: #444;
+  color: #e6e6e6;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+}
+
+.button-group {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.boolean-button {
+  background-color: #444;
+  color: #e6e6e6;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  padding: 5px 10px;
+  margin: 0;
+}
+
+.boolean-button:hover {
+  background-color: #555;
+}
+
+.boolean-button.active {
+  background-color: #666;
+}
+
+input[type=submit] {
+  background-color: #444;
+  color: #e6e6e6;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  width: 100%;
+  padding: 10px;
+  margin-top: 20px;
+}
+
+input[type=submit]:hover {
+  background-color: #555;
+}
+
+label {
+  color: #e6e6e6;
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.separator {
+  height: 1px;
+  background-color: #ddd;
+  margin: 10px 0;
 }
 </style>
 </head>
 <body>
   <div class="sidebar">
-    <form target="/review" method="post">
+    <form id="review-form" target="/review" method="post">
       <input type="hidden" id="doc-id" name="doc-id" value="{{ document['id'] }}">
       {% for label in labels %}
-        <label for="label-{{ label['id'] }}">{{ label['question'] }}:</label><br>
-        {% if label['type'] == 'boolean' %}
-          <input type="checkbox" id="label-{{ label['id'] }}" name="label-{{ label['id'] }}"><br>
-        {% elif label['type'] == 'text' %}
-          <input type="text" id="label-{{ label['id'] }}" name="label-{{ label['id'] }}"><br>
-        {% endif %}
+        <div>
+          <label for="label-{{ label['id'] }}" title="{{ label['description'] }}">{{ label['name'] }}</label>
+          {% if label['type'] == 'boolean' %}
+            <div class="button-group">
+              <button type="button" id="label-{{ label['id'] }}-no" name="label-{{ label['id'] }}" value="no" class="boolean-button">No</button>
+              <button type="button" id="label-{{ label['id'] }}-unknown" name="label-{{ label['id'] }}" value="unknown" class="boolean-button active">?</button>
+              <button type="button" id="label-{{ label['id'] }}-yes" name="label-{{ label['id'] }}" value="yes" class="boolean-button">Yes</button>
+            </div>
+          {% elif label['type'] == 'text' %}
+            <input type="text" id="label-{{ label['id'] }}" name="label-{{ label['id'] }}" title="{{ label['description'] }}">
+          {% endif %}
+          <div class="separator"></div>
+        </div>
       {% endfor %}
       <input type="submit" value="Save">
     </form>
   </div>
 
   <div class="main-content">
-    <pre>{{ document | tojson(indent=2) }}</pre>
+    <pre style="color: #e6e6e6;">{{ document | tojson(indent=2) }}</pre>
   </div>
+
+  <script>
+    const form = document.getElementById('review-form');
+    const buttons = document.querySelectorAll('.boolean-button');
+    buttons.forEach(button => {
+      button.addEventListener('click', (event) => {
+        const { id, value } = event.target;
+        const [baseId] = id.split('-');
+        const hiddenInput = document.getElementById(baseId);
+        if (!hiddenInput) {
+          const newHiddenInput = document.createElement('input');
+          newHiddenInput.type = 'hidden';
+          newHiddenInput.id = baseId;
+          newHiddenInput.name = baseId;
+          form.appendChild(newHiddenInput);
+        }
+        document.getElementById(baseId).value = value;
+        document.querySelectorAll(`[id^="${baseId}-"]`).forEach(btn => {
+          btn.classList.remove('active');
+        });
+        document.getElementById(id).classList.add('active');
+      });
+    });
+  </script>
+
 </body>
 </html>

@@ -9,10 +9,11 @@ import logging
 
 app = Flask(__name__)
 
-labels = [
-  {'id': 'include', 'question': 'Include?', 'type': 'boolean'},
-  {'id': 'substance', 'question': 'Substance', 'type': 'text'},
-]
+def get_labels():
+    graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+    labels = graph.run("MATCH (l:Label) RETURN l").data()
+    labels = [dict(x['l']) for x in labels]
+    return labels
 
 def get_node_by_id(tx, node_id):
     result = tx.run("MATCH (n {id: $id}) RETURN n", id=node_id)
@@ -24,12 +25,8 @@ def review_post():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     doc_id = request.form['doc-id']
     tx = graph.begin()
-        
-    # Merge label nodes
-    for label in labels:
-        tx.run("""
-        MERGE (label:Label {id: $id, question: $question, type: $type})
-        """, id=label['id'], question=label['question'], type=label['type'])
+
+    labels = get_labels()
 
     for label in labels:
         # Decide answer type
@@ -61,7 +58,7 @@ def get_unreviewed_document():
 
 @app.route('/review')
 def review_form():
-    return render_template('review.html', document=get_unreviewed_document(), labels=labels)
+    return render_template('review.html', document=get_unreviewed_document(), labels=get_labels())
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')  # Ensure the server is accessible externally
