@@ -15,16 +15,16 @@ def parse_content(d):
             d['content'] = json.loads(d['content'])
     return d
 
-@app.route('/')
-def list_documents():
+@app.route('/<string:user>/<string:project>')
+def list_documents(user, project):
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     q = "MATCH (o:Document) return o"
     documents = [dict(x['o']) for x in graph.run(q).data()]
     documents = [parse_content(d) for d in documents]
-    
+
     for d in documents:
         d['rendered_content'] = render_template_string(template, doc=d)
-    
+
     return render_template('documents.html', documents=documents)
 
 if __name__ == '__main__':

@@ -39,10 +39,10 @@ def create_settings():
                     tx.create(setting_node)
                     tx.commit()
 
-@app.route('/', methods=['GET', 'POST'])
-def settings():
+@app.route('/<string:user>/<string:project>', methods=['GET', 'POST'])
+def settings(user, project):
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
-    
+
     if request.method == 'POST':
         key = request.form.get('key')
         value = request.form.get('value')
@@ -54,8 +54,8 @@ def settings():
     settings = graph.run("MATCH (setting:Setting) RETURN setting.key AS key, setting.value AS value, setting.options AS options, setting.enabled AS enabled, setting.group AS group").data()
     return render_template('settings.html', settings=settings, settings_group=settings_group)
 
-@app.route('/generate_invite_link', methods=['GET'])
-def generate_invite_link():
+@app.route('/<string:user>/<string:project>/generate_invite_link', methods=['GET'])
+def generate_invite_link(user, project):
     invite_id = str(uuid4())
     return jsonify({'invite_link': invite_id})
 

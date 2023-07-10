@@ -20,8 +20,8 @@ def get_node_by_id(tx, node_id):
     records = result.data()
     return records[0]['n'] if records else None
 
-@app.route('/review', methods=['POST'])
-def review_post():
+@app.route('/<string:user>/<string:project>/review', methods=['POST'])
+def review_post(user, project):
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     doc_id = request.form['doc-id']
     tx = graph.begin()
@@ -56,8 +56,8 @@ def get_unreviewed_document():
         document['content'] = json.loads(document['content'])
     return documents[0] if documents else None
 
-@app.route('/review')
-def review_form():
+@app.route('/<string:user>/<string:project>')
+def review_form(user, project):
     return render_template('review.html', document=get_unreviewed_document(), labels=get_labels())
 
 if __name__ == '__main__':

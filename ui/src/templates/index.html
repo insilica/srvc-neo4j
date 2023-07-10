@@ -7,52 +7,81 @@
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-  }
-  .tabs {
-    display: flex;
-    justify-content: start;
-    background: #f9f9f9;
-    padding: 10px;
-    box-sizing: border-box;
-  }
-  .tab {
-    padding: 10px;
-    border: 1px solid #cccccc;
-    margin-right: 10px;
-    cursor: pointer;
-  }
-  .tab.active {
-    background: #cccccc;
+    display: flex;   /* This makes the body a flex container */
+    flex-direction: column;   /* This stacks the children vertically */
   }
   .main {
     padding: 10px;
     box-sizing: border-box;
-    height: calc(100% - 40px); /* subtract the space taken up by the tabs and padding */
+    flex-grow: 1;  /* This allows the main area to take up the rest of the space */
   }
   iframe {
     width: 100%;
-    height: calc(100% - 20px); /* subtract the space taken up by the h2 */
     border: none;
-  }
-  .tab-content {
-    display: none;
-    height: 100%;
-  }
-  .tab-content.active {
-    display: block;
+    overflow: hidden; /* Prevent scrollbar */
   }
   </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   {{extra_head|safe}}
 </head>
 <body>
-  <div class="tabs">
-    <div class="tab" data-tab="upload" data-url="{{upload_path}}">Upload</div>
-    <div class="tab" data-tab="document" data-url="{{document_path}}">Documents</div>
-    <div class="tab" data-tab="review" data-url="{{review_path}}">Review</div>
-    <div class="tab" data-tab="labels" data-url="{{labels_path}}">Labels</div>
-    <div class="tab" data-tab="settings" data-url="{{settings_path}}">Settings</div>
-  </div>
+  <iframe id="menuFrame" srcdoc="
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .tabs {
+        display: flex;
+        justify-content: start;
+        background: #f9f9f9;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      .tab {
+        padding: 10px;
+        border: 1px solid #cccccc;
+        margin-right: 10px;
+        cursor: pointer;
+      }
+      .tab.active {
+        background: #cccccc;
+      }
+      </style>
+      <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+    </head>
+    <body>
+      <div class='tabs'>
+        <div class='tab' data-tab='upload' data-url='{{upload_path}}'>Upload</div>
+        <div class='tab' data-tab='document' data-url='{{document_path}}'>Documents</div>
+        <div class='tab' data-tab='review' data-url='{{review_path}}'>Review</div>
+        <div class='tab' data-tab='labels' data-url='{{labels_path}}'>Labels</div>
+        <div class='tab' data-tab='settings' data-url='{{settings_path}}'>Settings</div>
+      </div>
+      <script>
+        $(function() {
+          var currentPath = window.parent.location.pathname;
+          $('.tab').each(function() {
+            var tabUrl = $(this).data('url');
+            if (currentPath.startsWith(tabUrl)) {
+              $('.tab').removeClass('active');
+              $(this).addClass('active');
+            }
+          });
+
+          $('.tab').on('click', function() {
+            $('.tab').removeClass('active');
+            $(this).addClass('active');
+            window.parent.location.href = $(this).data('url');
+          });
+        });
+      </script>
+    </body>
+    </html>
+  "></iframe>
 
   <div class="main">
     {{content|safe}}
@@ -60,20 +89,9 @@
 
   <script>
     $(function() {
-      var currentPath = window.location.pathname;
-      $('.tab').each(function() {
-        var tabUrl = $(this).data('url');
-        if (currentPath.startsWith(tabUrl)) {
-          $('.tab').removeClass('active');
-          $(this).addClass('active');
-        }
-      });
-
-      $('.tab').on('click', function() {
-        $('.tab').removeClass('active');
-        $(this).addClass('active');
-        window.location.href = $(this).data('url');
-      });
+      // Adjust the height of the iframe to fit its content
+      var iframe = document.getElementById('menuFrame');
+      iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
     });
   </script>
 </body>

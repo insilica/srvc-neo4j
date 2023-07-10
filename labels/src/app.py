@@ -4,8 +4,8 @@ from uuid import uuid4
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET', 'POST'])
-def label_editor():
+@app.route('/<string:user>/<string:project>', methods=['GET', 'POST'])
+def label_editor(user, project):
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     
     if request.method == 'POST':
