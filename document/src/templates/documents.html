@@ -5,14 +5,97 @@
 body {
   font-family: Arial, sans-serif;
 }
+.document {
+  border-top: 1px solid #333;
+  border-left: 1px solid #333;
+  border-right: 1px solid #333;
+  padding: 10px;
+}
+.document:last-child {
+  border-bottom: 1px solid #333;
+}
+.pagination{
+  margin: 10px 0;
+}
+.pagination-controls {
+  text-align: right;
+  float: right;
+}
+.pagination-info {
+  display: inline-block;
+}
+.disabled {
+  color: #aaa;
+}
 </style>
 </head>
 <body>
-  <h1>Documents</h1>
-  {% for document in documents %}
-  <div class="main-content">
-    <pre>{{ document | tojson(indent=2) }}</pre>
+  <div class="pagination">
+  <div class="pagination-info" id="pagination-info">Showing 0-0 of 0</div>
+  <div class="pagination-controls">
+    <button id="first-page" class="disabled" disabled><<</button>
+    <button id="prev-page" class="disabled" disabled><</button>
+    <button id="next-page" class="disabled" disabled>></button>
+    <button id="last-page" class="disabled" disabled>>></button>
   </div>
-  {% endfor %}
+  </div>
+  <div id="documents-container">
+    {% for document in documents %}
+    <div class="document">
+      <p>{{ document.rendered_content | safe }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  <script>
+    
+    var currentPage = 0;
+    var itemsPerPage = 5; // change this to whatever number of items you want per page
+    var totalItems = {{ documents|length }};
+    
+    function updatePaginationInfo() {
+      document.getElementById('pagination-info').textContent = 
+        "Showing " + (currentPage * itemsPerPage + 1) + "-" +
+        Math.min((currentPage + 1) * itemsPerPage, totalItems) + " of " + totalItems;
+    }
+    
+    function updatePaginationControls() {
+      document.getElementById('first-page').disabled = currentPage == 0;
+      document.getElementById('prev-page').disabled = currentPage == 0;
+      document.getElementById('next-page').disabled = (currentPage + 1) * itemsPerPage >= totalItems;
+      document.getElementById('last-page').disabled = (currentPage + 1) * itemsPerPage >= totalItems;
+    }
+    
+    function paginate() {
+      // var items = Array.from(document.getElementById('documents-container').children);
+      // items.forEach(function(item, index) {
+      //   item.style.display = (index >= currentPage * itemsPerPage && index < (currentPage + 1) * itemsPerPage) ? 'block' : 'none';
+      // });
+      updatePaginationInfo();
+      updatePaginationControls();
+    }
+    
+    document.getElementById('first-page').addEventListener('click', function() {
+      currentPage = 0;
+      paginate();
+    });
+    
+    document.getElementById('prev-page').addEventListener('click', function() {
+      currentPage = Math.max(currentPage - 1, 0);
+      paginate();
+    });
+    
+    document.getElementById('next-page').addEventListener('click', function() {
+      currentPage = Math.min(currentPage + 1, Math.ceil(totalItems / itemsPerPage) - 1);
+      paginate();
+    });    
+    
+    document.getElementById('last-page').addEventListener('click', function() {
+      currentPage = Math.ceil(totalItems / itemsPerPage) - 1;
+      paginate();
+    });    
+    
+    paginate(); // call this once to initialize the pagination
+      
+  </script>
 </body>
 </html>

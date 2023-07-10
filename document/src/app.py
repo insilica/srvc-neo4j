@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, render_template_string
 from jsonlines.jsonlines import InvalidLineError
 from werkzeug.utils import secure_filename
 from py2neo import Graph, Node, Relationship
@@ -8,19 +8,23 @@ import json, jsonlines, os, uuid
 
 app = Flask(__name__)
 
+template = "{{doc.content.content}}"
+
+def parse_content(d):
+    if d['content_type'] == 'json':
+            d['content'] = json.loads(d['content'])
+    return d
+
 @app.route('/')
 def list_documents():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
-    q = "MATCH (o:Document)"
-    q = f"{q} OPTIONAL MATCH (d)<-[:HAS_DOCUMENT]-(a:Answer)-[:HAS_LABEL]->(l:Label)"
-    q = f"{q} RETURN d.uri AS uri, d.json_data AS json_data,"
-    q = f"{q} collect({{label: l, answer: a}}) AS label_answers"
-    documents = graph.run(q).data()
-
-    for document in documents:
-        document['json_data'] = json.loads(document['json_data'])
-        document['label_answers'] = [(x['label'], x['answer']) for x in document['label_answers'] if x['label'] and x['answer']]
-
+    q = "MATCH (o:Document) return o"
+    documents = [dict(x['o']) for x in graph.run(q).data()]
+    documents = [parse_content(d) for d in documents]
+    
+    for d in documents:
+        d['rendered_content'] = render_template_string(template, doc=d)
+    
     return render_template('documents.html', documents=documents)
 
 if __name__ == '__main__':
