@@ -53,12 +53,10 @@ def review_post():
 
 def get_unreviewed_document():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
-    q = "MATCH (o:Document)"
-    q += " WHERE NOT EXISTS ((o)<-[:HAS_DOCUMENT]-(:Answer))"
-    q += " RETURN o.id AS id, o.uri AS uri, o.json_data AS jsonData"
-    documents = graph.run(q).data()
+    q = "MATCH (o:Document) WHERE NOT EXISTS ((o)<-[:HAS_DOCUMENT]-(:Answer)) RETURN o"
+    documents = [dict(x['o']) for x in graph.run(q).data()]
     for document in documents:
-        document['jsonData'] = json.loads(document['jsonData'])
+        document['content'] = json.loads(document['content'])
     return documents[0] if documents else None
 
 @app.route('/review')
