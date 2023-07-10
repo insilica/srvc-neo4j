@@ -28,7 +28,14 @@ def create_settings():
             if setting:
                 if matcher.match("Setting", key=setting_key).first() is None:
                     tx = graph.begin()
-                    setting_node = Node("Setting", key=setting_key, value=setting['value'], options=json.dumps(setting['options']), enabled=setting['enabled'], group=group['name'])
+                    setting_node = Node(
+                        "Setting",
+                        key=setting_key,
+                        value=setting.get('value'),
+                        options=json.dumps(setting.get('options')),
+                        enabled=setting.get('enabled'),
+                        group=group.get('name')
+                    )
                     tx.create(setting_node)
                     tx.commit()
 

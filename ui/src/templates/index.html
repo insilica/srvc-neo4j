@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>srvc.ai</title>
   <style>
   body, html {
     height: 100%;
@@ -44,46 +43,37 @@
   }
   </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  {{extra_head|safe}}
 </head>
 <body>
   <div class="tabs">
-    <div class="tab active" data-tab="upload">Upload</div>
-    <div class="tab" data-tab="document">Documents</div>
-    <div class="tab" data-tab="review">Review</div>
-    <div class="tab" data-tab="labels">Labels</div>
-    <div class="tab" data-tab="settings">Settings</div>
+    <div class="tab" data-tab="upload" data-url="{{upload_path}}">Upload</div>
+    <div class="tab" data-tab="document" data-url="{{document_path}}">Documents</div>
+    <div class="tab" data-tab="review" data-url="{{review_path}}">Review</div>
+    <div class="tab" data-tab="labels" data-url="{{labels_path}}">Labels</div>
+    <div class="tab" data-tab="settings" data-url="{{settings_path}}">Settings</div>
   </div>
 
   <div class="main">
-
-    <div id="upload" class="tab-content active">
-      <iframe src="http://localhost:{{ upload_port }}/"></iframe>
-    </div>
-
-    <div id="document" class="tab-content">
-      <iframe src="http://localhost:{{ document_port }}/"></iframe>
-    </div>
-
-    <div id="review" class="tab-content">
-      <iframe src="http://localhost:{{ review_port }}/review"></iframe>
-    </div>
-
-    <div id="labels" class="tab-content">
-      <iframe src="http://localhost:{{ labels_port }}/"></iframe>
-    </div>
-
-    <div id="settings" class="tab-content">
-      <iframe src="http://localhost:{{ settings_port }}/"></iframe>
-    </div>
+    {{content|safe}}
   </div>
 
   <script>
-    $('.tab').on('click', function() {
-      $('.tab').removeClass('active');
-      $('.tab-content').removeClass('active');
+    $(function() {
+      var currentPath = window.location.pathname;
+      $('.tab').each(function() {
+        var tabUrl = $(this).data('url');
+        if (currentPath.startsWith(tabUrl)) {
+          $('.tab').removeClass('active');
+          $(this).addClass('active');
+        }
+      });
 
-      $(this).addClass('active');
-      $('#' + $(this).data('tab')).addClass('active');
+      $('.tab').on('click', function() {
+        $('.tab').removeClass('active');
+        $(this).addClass('active');
+        window.location.href = $(this).data('url');
+      });
     });
   </script>
 </body>
