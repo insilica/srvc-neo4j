@@ -2,25 +2,95 @@
 <html>
 <head>
     <title>Label Editor</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #e6e6e6;
+            font-family: 'Ubuntu Mono', monospace;
+            margin: 0;
+            padding: 20px 20px 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            color: #e6e6e6;
+            background-color: #333;
+        }
+        th {
+            background-color: #444;
+        }
+        input[type=text] {
+            width: 100%;
+            padding: 6px 10px;
+            margin: 2px 0;
+            box-sizing: border-box;
+        }
+        .truncate {
+            max-width: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+    <script>
+        
+        function populateForm(element) {
+            var id = element.getElementsByClassName("id")[0].innerText;
+            var name = element.getElementsByClassName("name")[0].innerText;
+            var description = element.getElementsByClassName("description")[0].innerText;
+            var type = element.getElementsByClassName("type")[0].innerText;
+
+            document.getElementById("id").value = id;
+            document.getElementById("name").value = name;
+            document.getElementById("description").value = description;
+            document.getElementById("type").value = type;
+
+            document.getElementById("form-header").innerText = "Edit Label";
+            document.getElementById("create-form").style.display = "block";
+        }
+    </script>
 </head>
 <body>
-    <h1>Label Editor</h1>
-    <form method="post">
-        <label for="id">Label ID:</label><br>
-        <input type="text" id="id" name="id"><br>
-        <label for="question">Question:</label><br>
-        <input type="text" id="question" name="question"><br>
-        <label for="type">Type:</label><br>
-        <select id="type" name="type">
-            <option value="text">Text</option>
-            <option value="boolean">Boolean</option>
-        </select><br>
-        <input type="submit" value="Save">
+    <table>
+        <thead>
+            <tr>
+                <th>i</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for index, label in labels %}
+                <tr onclick="populateForm(this)">
+                    <td>{{ index }}</td>
+                    <td class="id truncate">{{ label.id }}</td>
+                    <td class="name">{{ label.name }}</td>
+                    <td class="description">{{ label.description }}</td>
+                    <td class="type">{{ label.type }}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <td><button onclick="document.getElementById('create-form').style.display = 'block'">+</button></td>
+                <td colspan="4"></td>
+            </tr>
+        </tbody>
+    </table>
+    <form id="create-form" style="display: none;" method="POST">
+        <h3 id="form-header">Create new label</h3>
+        <input type="hidden" id="id" name="id">
+        <label for="name">Name</label><br>
+        <input type="text" id="name" name="name" required><br>
+        <label for="description">Description</label><br>
+        <input type="text" id="description" name="description" required><br>
+        <label for="type">Type</label><br>
+        <input type="text" id="type" name="type" required><br>
+        <input type="submit" value="Submit">
     </form>
-    <hr>
-    <h2>Existing Labels</h2>
-    {% for label in labels %}
-        <p>ID: {{label.id}}, Question: {{label.question}}, Type: {{label.type}}</p>
-    {% endfor %}
 </body>
 </html>

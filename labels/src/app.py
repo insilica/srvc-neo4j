@@ -13,16 +13,19 @@ def label_editor():
         name = request.form.get('name')
         description = request.form.get('description')
         label_type = request.form.get('type')
-        tx = graph.begin()
-        tx.run("""
-            MERGE (label:Label {id: $id, name: $name, description: $description, type: $type})
-            """, id=id, name=name, description=description, type=label_type)
-        tx.commit()
+
+        if name and description and label_type:  # Ensure no empty fields
+            tx = graph.begin()
+            tx.run("""
+                MERGE (label:Label {id: $id, name: $name, description: $description, type: $type})
+                """, id=id, name=name, description=description, type=label_type)
+            tx.commit()
+
         return redirect(url_for('label_editor'))
 
     labels = graph.run("MATCH (label:Label) RETURN label.id AS id, label.name AS name, label.description AS description, label.type AS type").data()
+    labels = list(enumerate(labels, start=1))  # Add index for each label
     return render_template('labels.html', labels=labels)
-
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

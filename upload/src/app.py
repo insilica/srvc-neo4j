@@ -15,7 +15,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def create_nodes(data, filename):
-    document = Node('Document', id=str(uuid4()), json_data=json.dumps(data), type=data.get('type'), uri=data.get('uri'))
+    document = Node('Document', id=str(uuid4()), **data)
     document_source = Node('DocumentSource', name=filename)
     rel = Relationship(document_source, 'SOURCE_OF', document)
     return document, document_source, rel
