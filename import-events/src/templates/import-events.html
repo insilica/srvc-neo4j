@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    body {
+      background-color: #1a1a1a;
+      color: #e6e6e6;
+      font-family: 'Ubuntu Mono', monospace;
+      margin: 0;
+      padding: 20px 20px 40px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #666;
+      border-radius: 5px;
+      background-color: #333;
+    }
+
+    .file-upload {
+      border: 2px dashed #999;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .file-upload label {
+      color: #999;
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .file-upload label:hover {
+      color: #ccc;
+    }
+
+    .source-box {
+      position: relative;
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #666;
+      border-radius: 5px;
+      background-color: #444;
+    }
+
+    .source-box h3 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .source-box p {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 16px;
+      color: #999;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      color: #ccc;
+    }
+
+    .no-sources {
+      color: #999;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <form id="url-form" onsubmit="handleUrlSubmit(event);">
+      <label for="url-input">Enter a URL to import events:</label>
+      <input type="text" id="url-input" name="url">
+      <br>
+      <label for="sysrev-id-input">Or enter a Sysrev project ID:</label>
+      <input type="text" id="sysrev-id-input" name="sysrev_id">
+      <br>
+      <input type="submit" value="Import Events">
+    </form>
+
+    <div id="uploaded-sources">
+      {% if sources %}
+          <h2>Uploaded Sources:</h2>
+          {% for source in sources %}
+              <div class="source-box">
+                  <h3>{{ source.source }}</h3>
+                  <p>{{ source.documents }} documents</p>
+                  <span class="delete-btn" onclick="deleteSource('{{ source.source }}')">&#10006;</span>
+              </div>
+          {% endfor %}
+      {% else %}
+          <p class="no-sources">No sources uploaded yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    function handleUrlSubmit(event) {
+      event.preventDefault();
+      const sysrevId = document.getElementById('sysrev-id-input').value;
+      const url = document.getElementById('url-input').value;
+
+      let requestBody;
+      if (url) {
+        requestBody = JSON.stringify({ url: url });
+      } else if (sysrevId) {
+        requestBody = JSON.stringify({ sysrev_id: sysrevId });
+      } else {
+        console.error('Please provide either a URL or a Sysrev project ID.');
+        return;
+      }
+
+      fetch('{{ import_events_path }}/import', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: requestBody,
+      })
+        .then(response => {
+          if (response.ok) {
+            // Handle successful import
+            console.log('Events imported successfully');
+            //window.location.reload();
+            // Perform any additional actions if needed
+          } else {
+            // Handle import failure
+            console.log('Event import failed');
+            // Perform any error handling if needed
+          }
+        })
+        .catch(error => {
+          // Handle fetch error
+          console.error('Error:', error);
+          // Perform any error handling if needed
+        });
+    }
+
+    function deleteSource(sourceUrl) {
+      fetch(`{{ import_events_path }}/delete/${encodeURIComponent(sourceUrl)}`, {
+        method: 'POST'
+      })
+        .then(response => {
+          if (response.ok) {
+            // Handle successful deletion
+            console.log('Source deleted successfully');
+            window.location.reload();
+            // Perform any additional actions if needed
+          } else {
+            // Handle deletion failure
+            console.log('Source deletion failed');
+            // Perform any error handling if needed
+          }
+        })
+        .catch(error => {
+          // Handle fetch error
+          console.error('Error:', error);
+          // Perform any error handling if needed
+        });
+    }
+  </script>
+</body>
+
+</html>

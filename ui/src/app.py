@@ -33,6 +33,7 @@ def embed_response(service_url):
 
     rel_path = ''
     document_path = rel_path + os.getenv('DOCUMENT_PATH')
+    import_events_path = rel_path + os.getenv('IMPORT_EVENTS_PATH')
     review_path = rel_path + os.getenv('REVIEW_PATH')
     upload_path = rel_path + os.getenv('UPLOAD_PATH')
     labels_path = rel_path + os.getenv('LABELS_PATH')
@@ -42,6 +43,7 @@ def embed_response(service_url):
                            extra_head=extra_head,
                            content=content,
                            document_path=document_path,
+                           import_events_path=import_events_path,
                            review_path=review_path,
                            upload_path=upload_path,
                            labels_path=labels_path,

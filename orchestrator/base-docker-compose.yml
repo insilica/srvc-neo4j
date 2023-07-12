@@ -16,6 +16,14 @@ services:
       - neo4j
     env_file: ./.env
 
+  import-events:
+    build: ../../../import-events
+    volumes:
+      - ../../../import-events:/app
+    depends_on:
+      - neo4j
+    env_file: ./.env
+
   review:
     build: ../../../review
     volumes:
@@ -56,6 +64,7 @@ services:
       - neo4j
       - upload
       - document
+      - import-events
       - labels
       - review
       - settings

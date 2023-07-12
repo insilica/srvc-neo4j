@@ -48,7 +48,7 @@
       navbar.style.display = 'flex';
       navbar.style.justifyContent = 'start';
       navbar.style.overflow = 'auto';
-    
+
       // Create links (tabs)
       const links = [
         {name: 'Upload', url: '{{upload_path}}'},
@@ -56,11 +56,12 @@
         {name: 'Review', url: '{{review_path}}'},
         {name: 'Labels', url: '{{labels_path}}'},
         {name: 'Settings', url: '{{settings_path}}'},
+        {name: 'Import Events', url: '{{import_events_path}}'},
       ];
-      
+
       const pathParts = window.location.pathname.split('/');
       const activeTabName = pathParts.length >= 3 ? pathParts[3] : '';  // Get the 3rd child of the url
-    
+
       links.forEach(link => {
         const tab = document.createElement('div');
         tab.className = 'tab';
@@ -75,18 +76,18 @@
           window.location.href = link.url;
         });
         navbar.appendChild(tab);
-        
+
         if (link.name.toLowerCase() === activeTabName) {  // Check if the link name matches the 3rd child of the url
           tab.classList.add('active');  // If so, set this tab as active
         }
       });
-    
+
       // Append navbar to the body
       document.body.appendChild(navbar);
-    
+
       // Adjust the rest of the body to not be overlapped by navbar
       document.body.style.paddingTop = '60px';  // adjust this value based on the height of your navbar
-    
+
       // Adding styles for hover and active states
       const style = document.createElement('style');
       style.innerHTML = `
@@ -99,7 +100,7 @@
       `;
       document.head.appendChild(style);
     });
-    
+
     </script>
 </body>
 </html>
