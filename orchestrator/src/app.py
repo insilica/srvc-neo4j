@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, Response
 from requests.exceptions import RequestException
+import json
 import os
 import shutil
 import yaml
@@ -103,9 +104,14 @@ def project_service(user, project, subpath):
     for i in range(max_retries):
         try:
             if request.method == 'POST':
+                json_data = request.get_json()
+                if json_data is not None:
+                    headers = {'Content-Type': 'application/json'}
+                    response = requests.post(url, data=json.dumps(json_data).encode(), headers=headers)
+
                 files = {name: (file.filename, file.stream.read(), file.content_type) for name, file in request.files.items()}
-                print(files)
-                response = requests.post(url, files=files, data=request.form)
+                if files:
+                  response = requests.post(service_url, data=request.form, files=files)
             elif request.method == 'HEAD':
                 response = requests.head(url)
             else:  # GET request

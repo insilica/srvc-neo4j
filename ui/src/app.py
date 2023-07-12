@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from flask import Flask, redirect, request, render_template, Response
-import os, requests
+import json, os, requests
 
 app = Flask(__name__)
 
@@ -8,8 +8,14 @@ from bs4 import BeautifulSoup
 
 def embed_response(service_url):
     if request.method == 'POST':
+        json_data = request.get_json()
+        if json_data is not None:
+            headers = {'Content-Type': 'application/json'}
+            response = requests.post(service_url, data=json.dumps(json_data).encode(), headers=headers)
+
         files = {name: (file.filename, file.stream.read(), file.content_type) for name, file in request.files.items()}
-        response = requests.post(service_url, data=request.form, files=files)
+        if files:
+          response = requests.post(service_url, data=request.form, files=files)
     elif request.method == 'HEAD':
         response = requests.head(service_url)
     else:
