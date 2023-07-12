@@ -1,0 +1,82 @@
+              table_name              |                                                                                                               columns                                                                                                                
+--------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ ann_s3store                          | annotation_id, s3_id
+ ann_user                             | user_id, annotation_id
+ annotation                           | context, created, semantic_class_id, annotation, annotation_id, selection, article_id
+ article                              | article_uuid, enabled, duplicate_of, parent_article_uuid, article_data_id, last_user_review, article_id, last_assigned, project_id
+ article_checkout                     | user_id, article_id, checkout_time
+ article_data                         | dataset_id, helper_text, article_data_id, external_id, content, title_search, content_search, datasource_name, title, article_subtype, article_type
+ article_deleted_label                | user_id, added_time, inclusion, resolve, article_label_local_id, article_id, label_id, answer, article_label_id, updated_time, confirm_time, imported
+ article_flag                         | date_created, flag_id, flag_name, meta, article_id, disable
+ article_label                        | imported, resolve, inclusion, confirm_time, updated_time, added_time, answer, user_id, label_id, article_id, article_label_local_id, article_label_id
+ article_label_history                | article_id, article_label_history_id, resolve, inclusion, label_id, confirm_time, user_id, answer, imported, added_time, updated_time
+ article_location                     | source, external_id, location_id, article_id
+ article_note                         | article_note_id, content, updated_time, added_time, user_id, article_id
+ article_pdf                          | s3_id, article_id
+ article_ranking                      | _2, _1
+ article_resolve                      | resolve_time, label_ids, article_id, user_id
+ article_source                       | article_id, source_id
+ blog_entry                           | date_published, description, title, url, blog_entry_id, date_added
+ compensation                         | created, compensation_id, rate
+ compensation_project                 | project_id, created, compensation_id, enabled
+ compensation_project_default         | project_id, compensation_id
+ compensation_user_period             | user_id, period_begin, period_end, compensation_id
+ filestore                            | description, name, upload_time, user_id, content_md5, project_id, etag, file_id, ordering, max_length, delete_time
+ flyway_schema_history                | installed_rank, installed_by, script, type, description, version, success, execution_time, installed_on, checksum
+ gengroup                             | active, description, name, updated, gengroup_id, created
+ groups                               | stripe_id, active, created, group_name, updated, group_id, owner_user_id
+ important_terms                      | term_id, term
+ invitation                           | user_id, id, project_id, accepted, active, created, updated, description
+ invitation_from                      | user_id, invitation_id
+ job                                  | status, created, type, id, payload
+ job_status                           | name
+ job_type                             | name
+ label                                | project_id, value_type, name, question, short_label, category, predict_with_gpt, global_label_id, owner_project_id, root_label_id_local, consensus, enabled, definition, required, project_ordering, label_id_local, label_id
+ label_predicts                       | val, label_value, predict_run_id, article_id, label_id, stage
+ markdown                             | string, created, markdown_id
+ notification                         | created, topic_id, notification_id, content, publisher_id
+ notification_notification_subscriber | subscriber_id, viewed, consumed, notification_id
+ notification_publisher               | unique_publisher_type, publisher_id, created, project_id, user_id
+ notification_subscriber              | created, subscriber_id, user_id
+ notification_subscriber_topic        | topic_id, created, subscriber_id
+ notification_topic                   | topic_id, unique_name, created
+ plan_group                           | plan, created, group_id, sub_id
+ plan_user                            | plan_id, user_id, created, features_override, current_period_start, current_period_end, status, plan, sub_id
+ pmcid_s3store                        | s3_id, pmcid
+ predict_run                          | meta, input_time, create_time, predict_version_id, project_id, predict_run_id
+ predict_version                      | release_version, predict_version_id, update_time, create_time, note, commit_sha
+ project                              | meta, settings, last_gpt_run, invite_code, date_created, project_uuid, name, project_id, enabled, parent_project_id
+ project_description                  | markdown_id, project_id
+ project_document                     | project_id, delete_time, user_id, s3_id, pdoc_id
+ project_entity                       | entity_type, project_id, instance_count, instance_score, instance_name, update_time
+ project_fund                         | transaction_id, created, amount, user_id, project_id, id, transaction_source
+ project_fund_pending                 | updated, amount, user_id, project_id, id, transaction_source, transaction_id, status, created
+ project_group                        | id, created, group_id, project_id, updated
+ project_important_terms              | tfidf, project_id, created, term_id
+ project_keyword                      | label_id, project_id, keyword_id, value, category, color, label_value, user_id
+ project_member                       | join_date, permissions, project_id, user_id, enabled, membership_id, access_date
+ project_member_gengroup              | gengroup_id, project_id, id
+ project_member_gengroup_member       | gengroup_id, project_id, membership_id
+ project_source                       | meta, check_new_results, enabled, notes, date_created, import_date, dataset_id, new_articles_available, source_id, project_id, import_new_results
+ project_support_subscriptions        | quantity, project_id, stripe_id, created, id, status, user_id
+ reviewer_event                       | event_type, project_id, created, article_id, reviewer_event_id, user_id
+ s3store                              | filename, created, key, s3_id
+ schema_version                       | checksum, installed_rank, installed_on, execution_time, success, version, description, type, script, installed_by
+ semantic_class                       | definition, semantic_class_id, created
+ session                              | sdata, skey, user_id, update_time
+ srvc_document                        | hash, extra, uri, data
+ srvc_document_to_project             | hash, project_id
+ srvc_json_schema                     | hash, schema, created
+ srvc_label                           | uri, hash, extra, data
+ srvc_label_answer                    | answer, hash, event, extra_data, uri, reviewer, extra, timestamp, label
+ srvc_label_answer_to_project         | project_id, hash
+ srvc_label_to_project                | project_id, hash
+ stripe_plan                          | nickname, amount, product_name, tiers, product, created, interval, id
+ user_avatar_image                    | s3_id, user_id, enabled
+ user_email                           | principal, enabled, created, updated, verified, verify_code, user_id, email, id
+ user_group                           | permissions, id, user_id, enabled, created, updated, group_id
+ user_profile_image                   | s3_id, user_id, enabled, meta
+ web_event                            | browser_url, logged_in, request_url, user_id, project_id, is_error, meta, request_method, event_type, client_ip, skey, event_id, event_time
+ web_user                             | reset_code, name, permissions, username, google_user_id, user_id, email, pw_encrypted_buddy, verified, date_created, admin, verify_code, user_uuid, settings, registered_from, date_google_login, introduction, stripe_id, api_token
+(78 rows)
+
