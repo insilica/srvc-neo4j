@@ -53,7 +53,7 @@ def generate_docker_compose(user_name, project_name):
     run_docker_compose(project_path)
 
 def run_docker_compose(project_path):
-    subprocess.run(["docker-compose", "-f", os.path.join(project_path, "docker-compose.yml"), "up", "-d"])
+    subprocess.run(["docker","compose", "-f", os.path.join(project_path, "docker-compose.yml"), "up", "-d"])
 
 app = Flask(__name__)
 
