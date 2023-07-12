@@ -15,8 +15,8 @@ def parse_content(d):
             d['content'] = json.loads(d['content'])
     return d
 
-@app.route('/<string:user>/<string:project>')
-def list_documents(user, project):
+@app.route('/')
+def list_documents():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     q = "MATCH (o:Document) return o"
     documents = [dict(x['o']) for x in graph.run(q).data()]

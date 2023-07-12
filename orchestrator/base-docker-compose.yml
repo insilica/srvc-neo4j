@@ -2,9 +2,6 @@ version: '3'
 services:
   neo4j:
     image: neo4j:latest
-    ports:
-      - "7474:7474"
-      - "7687:7687"
     volumes:
       - ./neo4j/data:/data
       - ./neo4j/logs:/logs
@@ -12,49 +9,49 @@ services:
       - NEO4J_AUTH=neo4j/test1234
 
   document:
-    build: ./document
+    build: ../../../document
     volumes:
-      - ./document:/app
+      - ../../../document:/app
     depends_on:
       - neo4j
     env_file: ./.env
 
   review:
-    build: ./review
+    build: ../../../review
     volumes:
-      - ./review:/app
+      - ../../../review:/app
     depends_on:
       - neo4j
     env_file: ./.env
 
   labels:
-    build: ./labels
+    build: ../../../labels
     volumes:
-      - ./labels:/app
+      - ../../../labels:/app
     depends_on:
       - neo4j
     env_file: ./.env
 
   settings:
-    build: ./settings
+    build: ../../../settings
     volumes:
-      - ./settings:/app
+      - ../../../settings:/app
     depends_on:
       - neo4j
     env_file: ./.env
 
   upload:
-    build: ./upload
+    build: ../../../upload
     volumes:
-      - ./upload:/app
+      - ../../../upload:/app
     depends_on:
       - neo4j
     env_file: ./.env
 
   ui:
-    build: ./ui
+    build: ../../../ui
     volumes:
-      - ./ui:/app
+      - ../../../ui:/app
     depends_on:
       - neo4j
       - upload
@@ -64,4 +61,4 @@ services:
       - settings
     env_file: ./.env
     ports:
-      - "5000:5000"
+      - "${WEB_PORT}:5000"

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Projects</title>
+</head>
+<body>
+    <h1>Existing Projects</h1>
+    <ul>
+        {% for project in projects %}
+            <li><a href='/{{ project }}'>{{ project }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <h1>Create a New Project</h1>
+    <form method="POST">
+        <label for="user_name">User Name:</label><br>
+        <input type="text" id="user_name" name="user_name"><br>
+        <label for="project_name">Project Name:</label><br>
+        <input type="text" id="project_name" name="project_name"><br>
+        <input type="submit" value="Create">
+    </form>
+</body>
+</html>

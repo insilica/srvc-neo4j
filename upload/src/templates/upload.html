@@ -103,8 +103,8 @@
             const fileList = event.target.files;
             const formData = new FormData();
             formData.append('file', fileList[0]);
-    
-            fetch('/upload/source', {
+
+            fetch('upload/source', {
                 method: 'POST',
                 body: formData
             })
@@ -126,19 +126,19 @@
                 // Perform any error handling if needed
             });
         }
-    
+
         function dragOverHandler(event) {
             event.preventDefault();
             event.dataTransfer.dropEffect = 'copy';
         }
-    
+
         function dropHandler(event) {
             event.preventDefault();
             const fileList = event.dataTransfer.files;
             const formData = new FormData();
             formData.append('file', fileList[0]);
-    
-            fetch('/upload/source', {
+
+            fetch('upload/source', {
                 method: 'POST',
                 body: formData
             })
@@ -162,7 +162,7 @@
         }
 
         function deleteSource(sourceName) {
-            fetch(`/upload/delete/${sourceName}`, {
+            fetch(`upload/delete/${sourceName}`, {
                 method: 'POST'
             })
             .then(response => {

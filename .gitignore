@@ -9,7 +9,9 @@
 
 __pycache__
 neo4j
+projects
 result
 target
+venv
 
 nginx/default.conf

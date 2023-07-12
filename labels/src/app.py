@@ -4,10 +4,10 @@ from uuid import uuid4
 
 app = Flask(__name__)
 
-@app.route('/<string:user>/<string:project>', methods=['GET', 'POST'])
-def label_editor(user, project):
+@app.route('/', methods=['GET', 'POST'])
+def label_editor():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
-    
+
     if request.method == 'POST':
         id = str(uuid4())
         name = request.form.get('name')

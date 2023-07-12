@@ -53,15 +53,15 @@ def delete_from_neo4j(source_name, graph):
     # delete all remaining documents with no relationship to any source
     graph.run("MATCH (d:Document) WHERE NOT (d)<-[:SOURCE_OF]-(:DocumentSource) DELETE d")
 
-@app.route('/<string:user>/<string:project>')
-def upload(user, project):
+@app.route('/')
+def upload():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     result = graph.run("MATCH (s:DocumentSource)-[:SOURCE_OF]->(d:Document) RETURN s.name as source, count(d) as documents").data()
     return render_template('upload.html', sources=result)
 
-@app.route('/<string:user>/<string:project>/upload/source', methods=['POST'])
-def upload_file(user, project):
-    if request.method == 'POST':
+@app.route('/source', methods=['POST'])
+def upload_file():
+    if request.method == 'POST' and request.files.get('file'):
         f = request.files['file']
         filename = secure_filename(f.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -70,16 +70,15 @@ def upload_file(user, project):
         graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
         upload_to_neo4j(file_path, filename, graph)
 
-        return redirect(url_for('upload', user=user, project=project))
+        return redirect(url_for('upload'))
 
-@app.route('/<string:user>/<string:project>/upload/delete/<source_name>', methods=['POST'])
-def delete_source(user, project, source_name):
+@app.route('/delete/<source_name>', methods=['POST'])
+def delete_source(source_name):
     if request.method == 'POST':
         graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
         delete_from_neo4j(source_name, graph)
 
-        return redirect(url_for('upload', user=user, project=project))
-
+        return redirect(url_for('upload'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')  # Ensure the server is accessible externally

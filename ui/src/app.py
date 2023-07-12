@@ -6,9 +6,10 @@ app = Flask(__name__)
 
 from bs4 import BeautifulSoup
 
-def embed_response(user, project, service_url):
+def embed_response(service_url):
     if request.method == 'POST':
-        response = requests.post(service_url, data=request.form)
+        files = {name: (file.filename, file.stream.read(), file.content_type) for name, file in request.files.items()}
+        response = requests.post(service_url, data=request.form, files=files)
     elif request.method == 'HEAD':
         response = requests.head(service_url)
     else:
@@ -24,7 +25,7 @@ def embed_response(user, project, service_url):
     else:
         content = ''
 
-    rel_path = '/' + user + '/' + project + '/'
+    rel_path = ''
     document_path = rel_path + os.getenv('DOCUMENT_PATH')
     review_path = rel_path + os.getenv('REVIEW_PATH')
     upload_path = rel_path + os.getenv('UPLOAD_PATH')
@@ -42,17 +43,17 @@ def embed_response(user, project, service_url):
 
     return Response(final_content, mimetype=response.headers.get('content-type'))
 
-@app.route('/<string:user>/<string:project>/<string:service_name>', methods=['GET', 'POST', 'HEAD'])
-def user_project_service(user, project, service_name):
-    return embed_response(user, project, f"http://{service_name}:5000/{user}/{project}")
+@app.route('/<string:service_name>', defaults={'subpath': None}, methods=['GET', 'POST', 'HEAD'])
+@app.route('/<string:service_name>/<path:subpath>', methods=['GET', 'POST', 'HEAD'])
+def user_project_service(service_name, subpath):
+    if subpath:
+        return embed_response(f"http://{service_name}:5000/{subpath}")
+    else:
+        return embed_response(f"http://{service_name}:5000/")
 
-@app.route('/<string:user>/<string:project>/<string:service_name>/<path:subpath>', methods=['GET', 'POST', 'HEAD'])
-def user_project_service_subpath(user, project, service_name, subpath):
-    return embed_response(user, project, f"http://{service_name}:5000/{user}/{project}/{subpath}")
-
-@app.route('/<string:user>/<string:project>')
-def index(user, project):
-    rel_path = '/' + user + '/' + project + '/'
+@app.route('/')
+def index():
+    rel_path = '/'
     return redirect(rel_path + 'document')
     document_path = rel_path + os.getenv('DOCUMENT_PATH')
     review_path = rel_path + os.getenv('REVIEW_PATH')

@@ -2,10 +2,10 @@
 
 neo4j-based prototype
 
-`docker-compose up --build`
+```bash
+cd orchestrator
+pip install -r requirements.txt
+flask run
+```
 
-## Usage
-
-Upload jsonlines at /upload
-
-View documents at /documents
+Open http://localhost:5000
