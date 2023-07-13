@@ -22,6 +22,9 @@ def embed_response(service_url):
     else:
         response = requests.get(service_url, params=request.args)
 
+    if not response.headers.get('content-type').startswith('text/html'):
+        return Response(response.content, mimetype=response.headers.get('content-type'))
+
     soup = BeautifulSoup(response.content, 'html.parser')
     if soup.head is not None:
         extra_head = ''.join(str(child) for child in soup.head.children)
