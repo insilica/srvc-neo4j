@@ -14,26 +14,49 @@ app.config['UPLOAD_FOLDER'] = '/tmp/srvc-upload'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-def create_nodes(data, filename):
-    document = Node('Document', id=str(uuid4()), content=json.dumps(data), content_type='json')
+def get_node_by_hash(tx, hash):
+    result = tx.run("MATCH (n {hash: $hash}) RETURN n", hash=hash)
+    records = result.data()
+    return records[0]['n'] if records else None
+
+def create_document(data, filename):
+    document = Node('Document', id=str(uuid4()), content=json.dumps(data), content_type='json', hash=data.get('hash'))
     document_source = Node('DocumentSource', name=filename)
     rel = Relationship(document_source, 'SOURCE_OF', document)
     return document, document_source, rel
 
+def create_label(data, filename):
+    ldata = data.get('data')
+    return Node('Label', id=str(uuid4()), content=json.dumps(data), content_type='json', hash=data.get('hash'), name=ldata.get('id'), description=ldata.get('question'), type=ldata.get('type'))
+
+def create_answer(tx, data, filename):
+    adata = data.get('data')
+    answer = Node('Answer', id=str(uuid4()), answer=json.dumps(adata.get('answer')), content=json.dumps(adata), content_type='json', hash=data.get('hash'))
+    doc_rel = Relationship(answer, 'HAS_DOCUMENT', get_node_by_hash(tx, adata.get('event', adata.get('document'))))
+    lbl_rel = Relationship(answer, 'HAS_LABEL', get_node_by_hash(tx, adata.get('label')))
+    return answer, doc_rel, lbl_rel
+
 def upload_to_neo4j(file_path, filename, graph):
     with open(file_path, 'r') as f:
+        answers = []
         documents = []
         document_sources = []
+        labels = []
         rels = []
         for line in f:
             line = line.strip()  # remove leading/trailing whitespace
             if line:  # skip blank lines
                 try:
                     data = json.loads(line) # try to parse line as JSON
-                    document, document_source, rel = create_nodes(data, filename)
-                    documents.append(document)
-                    document_sources.append(document_source)
-                    rels.append(rel)
+                    if data['type'] == 'document':
+                        document, document_source, rel = create_document(data, filename)
+                        documents.append(document)
+                        document_sources.append(document_source)
+                        rels.append(rel)
+                    elif data['type'] == 'label':
+                        labels.append(create_label(data, filename))
+                    elif data['type'] == 'label-answer':
+                        answers.append(data)
 
                 except json.JSONDecodeError:
                     print(f"Skipped invalid JSON line: {line}")
@@ -44,6 +67,13 @@ def upload_to_neo4j(file_path, filename, graph):
             tx.merge(document_source, "DocumentSource", "name")
             tx.merge(document, "Document", "id")
             tx.create(rel)
+        for label in labels:
+            tx.merge(label, 'Label', 'id')
+        for data in answers:
+              answer, doc_rel, lbl_rel = create_answer(tx, data, filename)
+              tx.merge(answer, 'Answer', 'id')
+              tx.create(doc_rel)
+              tx.create(lbl_rel)
         graph.commit(tx)
 
 def delete_from_neo4j(source_name, graph):
