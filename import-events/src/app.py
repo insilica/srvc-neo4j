@@ -48,10 +48,10 @@ def upload_to_neo4j(file_path, filename, graph):
 
 def delete_from_neo4j(source_name, graph):
     # delete source and connected docs
-    graph.run("MATCH (s:DocumentSource)-[r:SOURCE_OF]->(d:Document) WHERE s.name = $name DELETE r, s, d", name=source_name)
+    graph.run("MATCH (s:DocumentSource)-[r:SOURCE_OF]->(d:Document) WHERE s.name = $name DETACH DELETE r, s, d", name=source_name)
 
     # delete all remaining documents with no relationship to any source
-    graph.run("MATCH (d:Document) WHERE NOT (d)<-[:SOURCE_OF]-(:DocumentSource) DELETE d")
+    graph.run("MATCH (d:Document) WHERE NOT (d)<-[:SOURCE_OF]-(:DocumentSource) DETACH DELETE d")
 
 @app.route('/', methods=['GET'])
 def home():
