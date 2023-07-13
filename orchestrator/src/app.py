@@ -70,6 +70,7 @@ def home():
     projects = [os.path.join(root, dir).replace(base_path + os.sep, '')
                 for root, dirs, files in os.walk(base_path)
                 for dir in dirs if 'docker-compose.yml' in os.listdir(os.path.join(root, dir))]
+    projects.sort()
 
     return render_template('home.html', projects=projects)
 
