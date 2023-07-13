@@ -39,6 +39,7 @@ def embed_response(service_url):
     document_path = rel_path + os.getenv('DOCUMENT_PATH')
     import_events_path = rel_path + os.getenv('IMPORT_EVENTS_PATH')
     review_path = rel_path + os.getenv('REVIEW_PATH')
+    export_path = rel_path + os.getenv('EXPORT_PATH')
     upload_path = rel_path + os.getenv('UPLOAD_PATH')
     labels_path = rel_path + os.getenv('LABELS_PATH')
     settings_path = rel_path + os.getenv('SETTINGS_PATH')
@@ -49,6 +50,7 @@ def embed_response(service_url):
                            document_path=document_path,
                            import_events_path=import_events_path,
                            review_path=review_path,
+                           export_path=export_path,
                            upload_path=upload_path,
                            labels_path=labels_path,
                            settings_path=settings_path)
