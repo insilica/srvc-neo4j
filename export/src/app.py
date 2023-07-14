@@ -39,8 +39,10 @@ def export_articles():
 def export_article_answers():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     q = """
-    MATCH (a:Answer)-[:HAS_DOCUMENT]->(d:Document), (a)-[:HAS_LABEL]->(l:Label)
-    RETURN a, d.id AS doc_id, l.name AS label_name
+    MATCH (a:Answer)-[:HAS_DOCUMENT]->(d:Document),
+          (a)-[:HAS_LABEL]->(l:Label),
+          (a)-[:HAS_USER]->(u:User)
+    RETURN a, d.id AS doc_id, l.name AS label_name, u.email as email
     """
     results = [dict(x) for x in graph.run(q).data()]
 
@@ -50,18 +52,22 @@ def export_article_answers():
         doc_id = result['doc_id']
         if doc_id not in grouped:
             grouped[doc_id] = {}
-        grouped[doc_id][result['label_name']] = json.loads(result['a']['answer'])
+        email = result['email']
+        if email not in grouped[doc_id]:
+            grouped[doc_id][email] = {}
+        grouped[doc_id][email][result['label_name']] = json.loads(result['a']['answer'])
 
     # Create an in-memory text stream
     si = StringIO()
     writer = csv.writer(si)
 
-    column_names = ['Document ID'] + sorted(set(result['label_name'] for result in results))
+    column_names = ['Document ID', 'User'] + sorted(set(result['label_name'] for result in results))
     writer.writerow(column_names)
 
-    for doc_id, answers in grouped.items():
-        row = [doc_id] + [answers.get(label_name, '') for label_name in column_names[1:]]
-        writer.writerow(row)
+    for doc_id, email_answers in grouped.items():
+        for email, answers in email_answers.items():
+            row = [doc_id, email] + [answers.get(label_name, '') for label_name in column_names[1:]]
+            writer.writerow(row)
 
     response = Response(si.getvalue(), mimetype='text/csv')
     response.headers['Content-Disposition'] = 'attachment; filename=article-answers.csv'
