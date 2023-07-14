@@ -1,12 +1,11 @@
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from flask import send_from_directory
-
 from jsonlines.jsonlines import InvalidLineError
 from werkzeug.utils import secure_filename
 from py2neo import Graph, Node, Relationship
 from py2neo.bulk import merge_nodes
 from uuid import uuid4
-import json, jsonlines, os, requests, uuid
+import json, jsonlines, os, re, requests, uuid
 
 app = Flask(__name__)
 
@@ -18,6 +17,14 @@ def get_node_by_hash(tx, hash):
     result = tx.run("MATCH (n {hash: $hash}) RETURN n", hash=hash)
     records = result.data()
     return records[0]['n'] if records else None
+
+def get_or_create_user(tx, email):
+    result = tx.run("MATCH (n:User {email: $email}) RETURN n", email=email)
+    records = result.data()
+    if records:
+      return records[0]['n']
+    else:
+      return Node('User', id=str(uuid4()), email=email)
 
 def create_document(data, filename):
     document = Node('Document', id=str(uuid4()), content=json.dumps(data), content_type='json', hash=data.get('hash'))
@@ -34,7 +41,11 @@ def create_answer(tx, data, filename):
     answer = Node('Answer', id=str(uuid4()), answer=json.dumps(adata.get('answer')), content=json.dumps(adata), content_type='json', hash=data.get('hash'))
     doc_rel = Relationship(answer, 'HAS_DOCUMENT', get_node_by_hash(tx, adata.get('event', adata.get('document'))))
     lbl_rel = Relationship(answer, 'HAS_LABEL', get_node_by_hash(tx, adata.get('label')))
-    return answer, doc_rel, lbl_rel
+    match = re.search(r'mailto:(\S+)', adata.get('reviewer'))
+    email = match.group(1) if match else None
+    user = get_or_create_user(tx, email)
+    user_rel = Relationship(answer, 'HAS_USER', user)
+    return answer, doc_rel, lbl_rel, user, user_rel
 
 def upload_to_neo4j(file_path, filename, graph):
     with open(file_path, 'r') as f:
@@ -70,10 +81,12 @@ def upload_to_neo4j(file_path, filename, graph):
         for label in labels:
             tx.merge(label, 'Label', 'id')
         for data in answers:
-              answer, doc_rel, lbl_rel = create_answer(tx, data, filename)
-              tx.merge(answer, 'Answer', 'id')
-              tx.create(doc_rel)
-              tx.create(lbl_rel)
+            answer, doc_rel, lbl_rel, user, user_rel = create_answer(tx, data, filename)
+            tx.merge(answer, 'Answer', 'id')
+            tx.create(doc_rel)
+            tx.create(lbl_rel)
+            tx.merge(user, 'User', 'email')
+            tx.create(user_rel)
         graph.commit(tx)
 
 def delete_from_neo4j(source_name, graph):
