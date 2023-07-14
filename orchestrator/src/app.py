@@ -1,13 +1,22 @@
-from flask import Flask, render_template, request, redirect, url_for, Response
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for, Response, flash, make_response
+from py2neo import Graph, Node, Relationship
 from requests.exceptions import RequestException
+from threading import Lock
+from uuid import uuid4
+from werkzeug.security import generate_password_hash, check_password_hash
 import json
+import jwt
 import os
 import shutil
 import yaml
 import random
 import requests
+import secrets
 import subprocess
 import time
+
+load_dotenv()
 
 def copy_base_files(project_path):
     os.makedirs(project_path, exist_ok=True)
@@ -16,8 +25,10 @@ def copy_base_files(project_path):
 
 def update_env_file(project_path, web_port):
     env_path = os.path.join(project_path, '.env')
+    secret_key = os.getenv('SECRET_KEY')
 
     with open(env_path, 'a') as env_file:
+        env_file.write(f'SECRET_KEY={secret_key}\n')
         env_file.write(f'WEB_PORT={web_port}\n')
 
 def get_existing_ports(base_path):
@@ -65,6 +76,60 @@ def run_docker_compose(path):
         subprocess.run(["docker", "compose", "-f", os.path.join(path, "docker-compose.yml"), "up", "-d"])
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+def get_user(tx, email):
+    result = tx.run("MATCH (n:User {email: $email}) RETURN n", email=email)
+    records = result.data()
+    if records:
+      return records[0]['n']
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        graph = Graph("bolt://localhost:5001", auth=("neo4j", "test1234"))
+        tx = graph.begin()
+        user = get_user(tx, email)
+        graph.commit(tx)
+
+        if user and check_password_hash(user['password_hash'], password):
+            # User ID is encoded into the token here
+            token = jwt.encode({'user_id': user['id']}, app.config['SECRET_KEY'], algorithm='HS256')
+
+            resp = make_response(redirect(url_for('home')))
+            resp.set_cookie('token', token)  # Set the JWT as a cookie
+
+            return resp
+
+        flash('Invalid email or password.')
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        graph = Graph("bolt://localhost:5001", auth=("neo4j", "test1234"))
+        tx = graph.begin()
+        user = get_user(tx, email)
+
+        if user:
+            flash('User already exists.')
+            return redirect(url_for('register'))
+
+        user = Node('User', id=str(uuid4()), email=email, password_hash=generate_password_hash(request.form.get('password')))
+        tx.merge(user, 'User', 'email')
+        graph.commit(tx)
+
+        flash('Registered successfully.')
+        token = jwt.encode({'user_id': user['id']}, app.config['SECRET_KEY'], algorithm='HS256')
+
+        resp = make_response(redirect(url_for('home')))
+        resp.set_cookie('token', token)  # Set the JWT as a cookie
+
+        return resp
+    return render_template('register.html')
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -135,6 +200,8 @@ def project_service(user, project, subpath):
                 return "Service is not available. Please try again later.", 503
 
     return Response(response.content, mimetype=response.headers.get('content-type'), headers={'Accept': response.headers.get('Accept')})
+
+run_docker_compose('docker')
 
 if __name__ == '__main__':
     app.run(debug=True)
