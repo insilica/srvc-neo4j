@@ -53,8 +53,16 @@ def generate_docker_compose(user_name, project_name):
     update_env_file(project_path, web_port)
     run_docker_compose(project_path)
 
-def run_docker_compose(project_path):
-    subprocess.run(["docker","compose", "-f", os.path.join(project_path, "docker-compose.yml"), "up", "-d"])
+# Work-around for https://github.com/docker/compose/issues/6532
+lock_dict = {'__root__': Lock()}
+
+def run_docker_compose(path):
+    with lock_dict['__root__']:
+      if path not in lock_dict:
+          lock_dict[path] = Lock()
+
+    with lock_dict[path]:
+        subprocess.run(["docker", "compose", "-f", os.path.join(path, "docker-compose.yml"), "up", "-d"])
 
 app = Flask(__name__)
 
