@@ -65,6 +65,10 @@ def user_project_service(service_name, subpath):
     else:
         return embed_response(f"http://{service_name}:5000/")
 
+@app.route('/favicon.ico')
+def favicon():
+    return Response(status=204)
+
 @app.route('/')
 def index():
     rel_path = '/'

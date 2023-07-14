@@ -35,20 +35,21 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-      // Create navbar
-      const navbar = document.createElement('div');
-      navbar.style.all = 'initial';
-      navbar.style.position = 'fixed';
-      navbar.style.left = '0';
-      navbar.style.top = '0';
-      navbar.style.width = '100%';
-      navbar.style.backgroundColor = '#f9f9f9';
-      navbar.style.boxSizing = 'border-box';
-      navbar.style.padding = '10px';
-      navbar.style.display = 'flex';
-      navbar.style.justifyContent = 'start';
-      navbar.style.overflow = 'auto';
-
+      // Create sidebar
+      const sidebar = document.createElement('div');
+      sidebar.style.all = 'initial';
+      sidebar.style.position = 'fixed';
+      sidebar.style.left = '0';
+      sidebar.style.top = '0';
+      sidebar.style.height = '100%';
+      sidebar.style.backgroundColor = '#f9f9f9';
+      sidebar.style.boxSizing = 'border-box';
+      sidebar.style.padding = '10px';
+      sidebar.style.display = 'flex';
+      sidebar.style.flexDirection = 'column';
+      sidebar.style.width = '200px'; // Width of the sidebar
+      sidebar.style.overflow = 'auto';
+    
       // Create links (tabs)
       const links = [
         {name: 'Upload', url: '{{upload_path}}'},
@@ -59,36 +60,36 @@
         {name: 'Import Events', url: '{{import_events_path}}'},
         {name: 'Export', url: '{{export_path}}'},
       ];
-
+    
       const pathParts = window.location.pathname.split('/');
       const activeTabName = pathParts.length >= 3 ? pathParts[3] : '';  // Get the 3rd child of the url
-
+    
       links.forEach(link => {
         const tab = document.createElement('div');
         tab.className = 'tab';
         tab.style.padding = '10px';
         tab.style.border = '1px solid #cccccc';
         tab.style.cursor = 'pointer';
-        tab.style.marginRight = '10px';
+        tab.style.marginBottom = '10px';
         tab.innerText = link.name;
         tab.addEventListener('click', () => {
           document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
           tab.classList.add('active');
           window.location.href = link.url;
         });
-        navbar.appendChild(tab);
-
+        sidebar.appendChild(tab);
+    
         if (link.name.toLowerCase() === activeTabName) {  // Check if the link name matches the 3rd child of the url
           tab.classList.add('active');  // If so, set this tab as active
         }
       });
-
-      // Append navbar to the body
-      document.body.appendChild(navbar);
-
-      // Adjust the rest of the body to not be overlapped by navbar
-      document.body.style.paddingTop = '60px';  // adjust this value based on the height of your navbar
-
+    
+      // Append sidebar to the body
+      document.body.appendChild(sidebar);
+    
+      // Adjust the rest of the body to not be overlapped by sidebar
+      document.body.style.paddingLeft = '210px';  // adjust this value based on the width of your sidebar
+    
       // Adding styles for hover and active states
       const style = document.createElement('style');
       style.innerHTML = `
@@ -101,7 +102,6 @@
       `;
       document.head.appendChild(style);
     });
-
     </script>
 </body>
 </html>
