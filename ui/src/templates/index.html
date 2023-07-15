@@ -14,14 +14,7 @@
     box-sizing: border-box;
     flex-grow: 1;  /* This allows the main area to take up the rest of the space */
   }
-  #tabsComponent{
-    /* Reset/Override body styles for the sidebar */
-    all: initial;
-    /* Now apply your custom styles for the sidebar */
-    padding: 10px;
-    font-family: Verdana;
-    background-color: white;
-  }
+  
   </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   {{extra_head|safe}}
@@ -42,12 +35,13 @@
       sidebar.style.top = '0';
       sidebar.style.height = '100%';
       sidebar.style.backgroundColor = '#f9f9f9';
-      sidebar.style.boxSizing = 'border-box';
       sidebar.style.padding = '10px';
-      sidebar.style.display = 'flex';
       sidebar.style.flexDirection = 'column';
-      sidebar.style.fontFamily = "'Source Code Pro'";
-      sidebar.style.fontSize = "20px"; 
+      sidebar.style.fontFamily = "'Roboto','Arial',sans-serif";
+      sidebar.style.lineheight = "2rem";
+      sidebar.style.fontSize = "1.4rem"; 
+      sidebar.style.backgroundColor = "#0F0F0F"
+      sidebar.style.color = "#f1f1f1"
       sidebar.style.width = '200px'; // Width of the sidebar
       sidebar.style.overflow = 'auto';
     
@@ -63,15 +57,14 @@
       ];
     
       const pathParts = window.location.pathname.split('/');
-      const activeTabName = pathParts.length >= 3 ? pathParts[3] : '';  // Get the 3rd child of the url
+      const activeTabName = pathParts.length >= 3 ? pathParts[3] : pathParts[1];  // Get the 3rd child of the url
     
       links.forEach(link => {
         const tab = document.createElement('div');
         tab.className = 'tab';
         tab.style.padding = '10px';
-        tab.style.border = '1px solid #cccccc';
         tab.style.cursor = 'pointer';
-        tab.style.marginBottom = '10px';
+        tab.style.marginBottom = '1px';
         tab.innerText = link.name;
         tab.addEventListener('click', () => {
           document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -95,10 +88,10 @@
       const style = document.createElement('style');
       style.innerHTML = `
         .tab:hover {
-          background-color: #ddd;  // change color on hover
+          background-color: #3D3D3D;  // change color on hover
         }
         .tab.active {
-          background-color: #cccccc;  // change color for active tab
+          background-color: #272727;  // change color for active tab
         }
       `;
       document.head.appendChild(style);
