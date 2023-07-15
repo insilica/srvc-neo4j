@@ -6,13 +6,14 @@
             background-color: #1a1a1a;
             color: #e6e6e6;
             font-family: 'Ubuntu Mono', monospace;
+            font-size: 1vw;
             margin: 0;
-            padding: 20px 20px 40px;
+            padding: 20px;
+            height: 100vh;
         }
 
         .container {
-            max-width: 600px;
-            margin: 0 auto;
+            max-width: 1000px;
             padding: 20px;
             border: 1px solid #666;
             border-radius: 5px;
@@ -24,6 +25,23 @@
             padding: 20px;
             text-align: center;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            transform: scale(1.02);
+            border-color: #ccc;
+        }
+
+        .file-upload label {
+            color: #999;
+            font-size: 1.2vw;
+            margin: 0;
+            text-transform: uppercase; // Make text uppercase for emphasis
+        }
+
+        .file-upload label:hover {
+            color: #ccc;
         }
 
         .file-upload label {
@@ -78,7 +96,7 @@
     <div class="container">
         <div class="file-upload" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
             <input type="file" id="file-input" name="file" style="display: none;" onchange="handleFileSelect(event);">
-            <label for="file-input">Drop a file or click to upload</label>
+            <label for="file-input"><strong>Drop a file here</strong> or <strong>click to upload</strong> to create a Source</label>
         </div>
 
         <div id="uploaded-sources">
@@ -96,6 +114,10 @@
             {% endif %}
         </div>
     </div>
+
+    <p class="supported-types">
+        Supported file types: .jsonlines, .ris, and .zip (containing .pdf files)
+    </p>
 
     <script>
         function handleFileSelect(event) {
