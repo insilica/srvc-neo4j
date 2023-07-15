@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
         body {
             background-color: #0F0F0F;
@@ -15,43 +17,6 @@
         .container {
             max-width: 1000px;
             padding: 20px;
-            border: 1px solid #666;
-            border-radius: 5px;
-            background-color: #333;
-        }
-
-        .file-upload {
-            border: 2px dashed #999;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .file-upload:hover {
-            transform: scale(1.02);
-            border-color: #ccc;
-        }
-
-        .file-upload label {
-            color: #999;
-            font-size: 1.2vw;
-            margin: 0;
-            text-transform: uppercase; // Make text uppercase for emphasis
-        }
-
-        .file-upload label:hover {
-            color: #ccc;
-        }
-
-        .file-upload label {
-            color: #999;
-            font-size: 18px;
-            margin: 0;
-        }
-
-        .file-upload label:hover {
-            color: #ccc;
         }
 
         .source-box {
@@ -88,16 +53,96 @@
 
         .no-sources {
             color: #999;
-            text-align: center;
         }
+
+        .upload-dialog {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .upload-dialog-content {
+            background-color: #282828;
+            margin: 15% auto;
+            width: 50%; 
+            height: 80%;
+            border-radius: 5px;
+        }
+
+        /* Styles for the dialog header */
+        .dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px 4px 10px;
+        }
+
+        .dialog-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .dialog-header .close {
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .upload-dialog hr {
+            border: none; /* Remove the border */
+            height: 1px; /* Set the height of the hr */
+            color: #FF8C00; /* Set the color of the hr */
+            background-color: #FF8C00; 
+        }
+        
+        .upload-dialog .file-upload {
+            display: flex;
+            height: 80%;
+            width: 90%;
+            padding: 20px;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            font-size: 1rem;
+            text-align:center;
+        }
+
+
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="file-upload" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-            <input type="file" id="file-input" name="file" style="display: none;" onchange="handleFileSelect(event);">
-            <label for="file-input"><strong>Drop a file here</strong> or <strong>click to upload</strong> to create a Source</label>
+        
+        <!-- ADD DOCUMENTS BUTTON-->
+        <button id="add-docs-btn">Add Documents</button>
+        <p class="supported-types">Supports: .jsonlines, .ris, and .zip (containing .pdf files)</p>
+
+        <!-- UPLOAD DIALOG -->
+        <div id="upload-dialog" class="upload-dialog">
+            <div class="upload-dialog-content">
+                <!-- Dialog Header -->
+                <div class="dialog-header">
+                    <h2>Upload documents</h2>
+                    <span id="close-btn" class="close">&#10006;</span>
+                </div>
+                <hr>
+
+                <div class="file-upload" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+                    <p>Drag and drop document files.</p>
+                    <p>Supports: .jsonlines, .ris, and .zip (containing .pdf files)</p>
+                    <button id="select-files-btn">SELECT FILES</button>
+                    <input type="file" id="file-input" name="file" style="display: none;" onchange="handleFileSelect(event);">
+                </div>
+            </div>
         </div>
+
 
         <div id="uploaded-sources">
             {% if sources %}
@@ -114,11 +159,6 @@
             {% endif %}
         </div>
     </div>
-
-    <p class="supported-types">
-        Supported file types: .jsonlines, .ris, and .zip (containing .pdf files)
-    </p>
-
     <script>
         function handleFileSelect(event) {
             event.preventDefault();
@@ -205,6 +245,21 @@
                 // Perform any error handling if needed
             });
         }
+
+        // Open the upload dialog
+        document.getElementById('add-docs-btn').addEventListener('click', function() {
+            document.getElementById('upload-dialog').style.display = 'block';
+        });
+
+        // Close the upload dialog
+        document.getElementById('close-btn').addEventListener('click', function() {
+            document.getElementById('upload-dialog').style.display = 'none';
+        });
+
+        // Select files button
+        document.getElementById('select-files-btn').addEventListener('click', function() {
+            document.getElementById('file-input').click();
+        });
     </script>
 </body>
 </html>
