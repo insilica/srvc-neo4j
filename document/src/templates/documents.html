@@ -2,8 +2,14 @@
 <html>
 <head>
 <style>
-body {
-  font-family: Arial, sans-serif;
+  body {
+    background-color: #0F0F0F;
+    color: #e6e6e6;
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 1rem;
+    margin: 0;
+    padding: 20px;
+    height: 100vh;
 }
 .document {
   border-top: 1px solid #333;
@@ -27,17 +33,28 @@ body {
 .disabled {
   color: #aaa;
 }
+
+#search-form {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+#search-input {
+  flex-grow: 1; /* Make the input field take up as much space as possible */
+  padding: 10px;
+  color: #FF8C00;
+  background-color: #1C1D1E;
+  border: 1px solid #333;
+  font-family: 'Ubuntu Mono', monospace;
+  font-size: 1rem;
+}
 </style>
 </head>
 <body>
-  <div class="pagination">
-  <div class="pagination-info" id="pagination-info">Showing 0-0 of 0</div>
-  <div class="pagination-controls">
-    <button id="first-page" class="disabled" disabled><<</button>
-    <button id="prev-page" class="disabled" disabled><</button>
-    <button id="next-page" class="disabled" disabled>></button>
-    <button id="last-page" class="disabled" disabled>>></button>
-  </div>
+  <div>
+    <form id="search-form">
+      <input type="text" id="search-input" placeholder="Search documents">
+    </form>
   </div>
   <div id="documents-container">
     {% for document in documents %}
@@ -46,7 +63,26 @@ body {
     </div>
     {% endfor %}
   </div>
+  <div class="pagination">
+    <div class="pagination-info" id="pagination-info">Showing 0-0 of 0</div>
+    <div class="pagination-controls">
+      <button id="first-page" class="disabled" disabled><<</button>
+      <button id="prev-page" class="disabled" disabled><</button>
+      <button id="next-page" class="disabled" disabled>></button>
+      <button id="last-page" class="disabled" disabled>>></button>
+    </div>
+  </div>
   <script>
+
+    // Listen for the form submission event to perform the search
+    document.getElementById('search-form').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the form from being submitted in the usual way
+
+      var query = document.getElementById('search-input').value;
+
+      // Perform the search here. You will need to replace this with your actual search code
+      console.log("Performing search for: " + query);
+    });
     
     var currentPage = 0;
     var itemsPerPage = 5; // change this to whatever number of items you want per page
