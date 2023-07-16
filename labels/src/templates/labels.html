@@ -4,7 +4,7 @@
     <title>Label Editor</title>
     <style>
         body {
-            background-color: #1a1a1a;
+            background-color: #0F0F0F;
             color: #e6e6e6;
             font-family: 'Ubuntu Mono', monospace;
             margin: 0;
@@ -29,38 +29,158 @@
             margin: 2px 0;
             box-sizing: border-box;
         }
+
         .truncate {
             max-width: 10px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        .dialog {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .dialog-content {
+            background-color: #282828;
+            margin: 20px auto;
+            width: 50%;
+            border-radius: 5px;
+        }
+
+        .dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px 8px 10px;
+        }
+
+        .dialog-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .dialog-header .close {
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /* dialog create form */
+
+        .dialog-create-form {
+            display: flex;
+            flex-direction: column;
+            padding:20px;
+        }
+
+        .dialog-create-form label {
+            margin: 0;
+            margin-bottom: 2px;
+        }
+
+        .dialog-create-form input[type=text] {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            background: #eee;
+            border-radius: 5px;
+        }
+        
+        .dialog-create-form input[type=submit], .dialog-create-form input[type=button] {
+            padding: 10px 20px;
+            border: none;
+            background-color: #FF8C00;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .dialog-create-form input[type=submit]:hover, .dialog-create-form input[type=button]:hover {
+            background-color: #e07c00;
+        }
+        
+        .dialog-create-form input[type=submit]:active, .dialog-create-form input[type=button]:active {
+            background-color: #ff9d40;
+        }
+
+        /* general styling */
+        hr {
+            border: none; /* Remove the border */
+            height: 1px; /* Set the height of the hr */
+            color: #FF8C00; /* Set the color of the hr */
+            background-color: #FF8C00; 
+            margin: 0;
+        }
+        
     </style>
     <script>
         
-        function populateForm(element) {
-            var id = element.getElementsByClassName("id")[0].innerText;
-            var name = element.getElementsByClassName("name")[0].innerText;
-            var description = element.getElementsByClassName("description")[0].innerText;
-            var type = element.getElementsByClassName("type")[0].innerText;
+        function newForm(header='Create Label'){
+            var modal = document.getElementById("myModal");
+            modal.style.display = "block";
+            document.getElementById('form-header').innerText = header;
 
-            document.getElementById("id").value = id;
-            document.getElementById("name").value = name;
-            document.getElementById("description").value = description;
-            document.getElementById("type").value = type;
+            var span = document.getElementsByClassName("close")[0];
+            span.onclick = function() { modal.style.display = "none";}
 
-            document.getElementById("form-header").innerText = "Edit Label";
-            document.getElementById("create-form").style.display = "block";
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
         }
 
-        function newForm(){
-            document.getElementById("id").value = "";
-            document.getElementById("name").value = "";
-            document.getElementById("description").value = "";
-            document.getElementById("type").value = "";
+        function populateForm(row, id) {
+            // TODO update to /delete rather than /labels/delete
+            newForm('Edit Label');
+            document.getElementById('id').value = id;
+            document.getElementById('create-form').action = "/labels/edit/" + id;
+            document.getElementById('name').value = row.querySelector('.name').innerText;
+            document.getElementById('description').value = row.querySelector('.description').innerText;
+            document.getElementById('type').value = row.querySelector('.type').innerText;
+            document.getElementById('myModal').style.display = "block";
+        }
 
-            document.getElementById("form-header").innerText = "Create Label";
-            document.getElementById("create-form").style.display = "block";
+        function deleteLabel(id) {
+            // TODO update to /delete rather than /labels/delete
+            fetch("/labels/delete/" + id, {
+                method: "POST"
+            })
+            .then(response => location.reload())
+            .catch(err => console.error(err));
+        }
+
+        function ajaxSubmitForm(event) {
+            var form = document.getElementById("create-form");
+            var url = form.action;
+            var formData = new FormData(form);
+
+            fetch(url, {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // Handle the response data here
+                // For example, you could add the new label to the table
+
+                // Close the modal
+                document.getElementById('myModal').style.display = 'none';
+                // Reload the page
+                location.reload();
+            })
+            .catch(err => console.error(err));
         }
 
     </script>
@@ -69,21 +189,22 @@
     <table>
         <thead>
             <tr>
-                <th>i</th>
-                <th>ID</th>
                 <th>Name</th>
                 <th>Description</th>
                 <th>Type</th>
+                <th>Action
             </tr>
         </thead>
         <tbody>
             {% for index, label in labels %}
-                <tr onclick="populateForm(this)">
-                    <td>{{ index }}</td>
-                    <td class="id truncate">{{ label.id }}</td>
+                <tr>
                     <td class="name">{{ label.name }}</td>
                     <td class="description">{{ label.description }}</td>
                     <td class="type">{{ label.type }}</td>
+                    <td class="action">
+                        <button onclick="event.stopPropagation(); deleteLabel('{{ label.id }}')">Delete</button>
+                        <button onclick="event.stopPropagation(); populateForm(this.parentElement.parentElement, '{{ label.id }}')">Edit</button>
+                    </td>
                 </tr>
             {% endfor %}
             <tr>
@@ -92,17 +213,28 @@
             </tr>
         </tbody>
     </table>
-    <form id="create-form" style="display: none;" method="POST">
-        <h3 id="form-header">Create new label</h3>
-        <input type="hidden" id="id" name="id">
-        <label for="name">Name</label><br>
-        <input type="text" id="name" name="name" required><br>
-        <label for="description">Description</label><br>
-        <input type="text" id="description" name="description" required><br>
-        <label for="type">Type</label><br>
-        <input type="text" id="type" name="type" required><br>
-        <input type="submit" value="Submit">
-        <input type="submit" value="Cancel" onclick="document.getElementById('create-form').style.display = 'none'; return false;">
-    </form>
+
+    <div id="myModal" class="dialog">
+        <!-- Modal content -->
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h2 id="form-header">Create new label</h2>
+                <span class="close">&#10006;</span>
+            </div>
+            <hr>
+            <!-- TODO update /labels/create to just /create-->
+            <form id="create-form" method="POST" action='/labels/create' class="dialog-create-form">
+                <input type="hidden" id="id" name="id">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+                <label for="description">Description</label>
+                <input type="text" id="description" name="description" required>
+                <label for="type">Type</label>
+                <input type="text" id="type" name="type" required>
+                <input type="button" value="SUBMIT" onclick="event.preventDefault(); ajaxSubmitForm();">
+                <input type="button" value="CANCEL" onclick="document.getElementById('myModal').style.display = 'none';">
+            </form>
+        </div>
+    </div>
 </body>
 </html>
