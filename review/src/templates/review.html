@@ -62,7 +62,7 @@ input[type=text] {
 }
 
 .boolean-button.active {
-  background-color: #666;
+  background-color: #FF8C00;
 }
 
 input[type=submit] {
@@ -84,6 +84,8 @@ label {
   display: block;
   text-align: center;
   margin-top: 20px;
+  margin-bottom: 5px;
+  font-size: 0.8rem
 }
 
 .separator {
@@ -92,7 +94,72 @@ label {
   margin: 10px 0;
 }
 </style>
+
+<script>
+  class BooleanLabel extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+    }
+
+    connectedCallback() {
+      this.render();
+      this.setEventListeners();
+    }
+
+    render() {
+      this.shadowRoot.innerHTML = `
+        <style>
+          .button-group {
+            display: flex;
+            justify-content: center;
+            border: 0px solid #ddd;
+          }
+
+          .button-group button {
+            margin: 0px;
+            border: 0px solid #ddd;
+            background-color: #A9A9A9
+          }
+
+          .button-group button.active {
+            background-color: #FF8C00;
+          }
+          
+          .button-group button#unknown {
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+          }
+          
+          .button-group button#unknown.active {
+            background-color: #FF7F00;
+          }
+
+        </style>
+        <div class="button-group">
+          <button type="button" id="no">No</button>
+          <button type="button" id="unknown" class="active">?</button>
+          <button type="button" id="yes">Yes</button>
+        </div>
+      `;
+    }
+
+    setEventListeners() {
+      this.shadowRoot.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', (event) => {
+          this.shadowRoot.querySelectorAll('button').forEach(button => {
+            button.classList.remove('active');
+          });
+          event.target.classList.add('active');
+        })
+      });
+    }
+  }
+
+  customElements.define('boolean-label', BooleanLabel);
+</script>
 </head>
+
 <body>
   <div class="sidebar">
     <form id="review-form" target="/review" method="post">
@@ -101,11 +168,7 @@ label {
         <div>
           <label for="label-{{ label['id'] }}" title="{{ label['description'] }}">{{ label['name'] }}</label>
           {% if label['type'] == 'boolean' %}
-            <div class="button-group">
-              <button type="button" id="label-{{ label['id'] }}-no" name="label-{{ label['id'] }}" value="no" class="boolean-button">No</button>
-              <button type="button" id="label-{{ label['id'] }}-unknown" name="label-{{ label['id'] }}" value="unknown" class="boolean-button active">?</button>
-              <button type="button" id="label-{{ label['id'] }}-yes" name="label-{{ label['id'] }}" value="yes" class="boolean-button">Yes</button>
-            </div>
+            <boolean-label id="{{ label['id'] }}"></boolean-label>
           {% elif label['type'] == 'text' %}
             <input type="text" id="label-{{ label['id'] }}" name="label-{{ label['id'] }}" title="{{ label['description'] }}">
           {% endif %}
@@ -121,28 +184,40 @@ label {
   </div>
 
   <script>
-    const form = document.getElementById('review-form');
-    const buttons = document.querySelectorAll('.boolean-button');
-    buttons.forEach(button => {
-      button.addEventListener('click', (event) => {
-        const { id, value } = event.target;
-        const [baseId] = id.split('-');
-        const hiddenInput = document.getElementById(baseId);
-        if (!hiddenInput) {
-          const newHiddenInput = document.createElement('input');
-          newHiddenInput.type = 'hidden';
-          newHiddenInput.id = baseId;
-          newHiddenInput.name = baseId;
-          form.appendChild(newHiddenInput);
+    document.getElementById("review-form").addEventListener("submit", function(event){
+        event.preventDefault(); // This prevents the form from submitting normally
+
+        // Start a new AJAX request
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "/review/submit_review"); // Update to your form action
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        // When the request is finished, log the response to the console
+        xhr.onload = function(){
+            console.log(xhr.responseText);
+            location.reload();
+        };
+
+        // Prepare data to send
+        let formData = new FormData(event.target);
+
+        // Get boolean-label value
+        let booleanLabels = document.querySelectorAll("boolean-label");
+        for(let i = 0; i < booleanLabels.length; i++) {
+            let booleanLabel = booleanLabels[i];
+            let activeButton = booleanLabel.shadowRoot.querySelector('button.active');
+            let booleanLabelValue = activeButton.id; // 'yes', 'no', 'unknown'
+            formData.append(booleanLabel.id, booleanLabelValue);
         }
-        document.getElementById(baseId).value = value;
-        document.querySelectorAll(`[id^="${baseId}-"]`).forEach(btn => {
-          btn.classList.remove('active');
-        });
-        document.getElementById(id).classList.add('active');
-      });
+
+        // Convert formData to URLSearchParams (url encoded form data)
+        let urlEncodedData = new URLSearchParams(formData);
+
+        // Send the data
+        xhr.send(urlEncodedData);
     });
-  </script>
+</script>
+</body>
 
 </body>
 </html>
