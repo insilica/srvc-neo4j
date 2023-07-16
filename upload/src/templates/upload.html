@@ -19,42 +19,6 @@
             padding: 20px;
         }
 
-        .source-box {
-            position: relative;
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #666;
-            border-radius: 5px;
-            background-color: #444;
-        }
-
-        .source-box h3 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .source-box p {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .delete-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            font-size: 16px;
-            color: #999;
-            cursor: pointer;
-        }
-
-        .delete-btn:hover {
-            color: #ccc;
-        }
-
-        .no-sources {
-            color: #999;
-        }
-
         .upload-dialog {
             display: none;
             position: fixed;
@@ -70,9 +34,9 @@
 
         .upload-dialog-content {
             background-color: #282828;
-            margin: 15% auto;
+            margin: 20px auto;
             width: 50%; 
-            height: 80%;
+            height: 90%;
             border-radius: 5px;
         }
 
@@ -103,8 +67,8 @@
         
         .upload-dialog .file-upload {
             display: flex;
-            height: 80%;
             width: 90%;
+            height:80%;
             padding: 20px;
             justify-content: center;
             align-items: center;
@@ -114,14 +78,59 @@
             text-align:center;
         }
 
+        button {
+            background-color: #FF8C00;
+            border-color: black;
+        }
 
+        #uploaded-sources {
+            margin-top: 20px;
+        }
+
+        #uploaded-sources h2 {
+            margin: 0;
+        }
+
+        .source-box {
+            position: relative;
+            margin-top: 5px;
+            padding: 5px 10px;
+            border: 1px solid #666;
+            background-color: #444;
+        }
+
+        .source-box h3 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .source-box p {
+            margin: 0;
+            font-size: 16px;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 16px;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            color: #ccc;
+        }
+
+        .no-sources {
+            color: #999;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         
         <!-- ADD DOCUMENTS BUTTON-->
-        <button id="add-docs-btn">Add Documents</button>
+        <button id="add-docs-btn"><b>ADD DOCUMENTS</b></button>
         <p class="supported-types">Supports: .jsonlines, .ris, and .zip (containing .pdf files)</p>
 
         <!-- UPLOAD DIALOG -->
@@ -137,16 +146,15 @@
                 <div class="file-upload" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
                     <p>Drag and drop document files.</p>
                     <p>Supports: .jsonlines, .ris, and .zip (containing .pdf files)</p>
-                    <button id="select-files-btn">SELECT FILES</button>
+                    <button id="select-files-btn"><b>SELECT FILES</b></button>
                     <input type="file" id="file-input" name="file" style="display: none;" onchange="handleFileSelect(event);">
                 </div>
             </div>
         </div>
 
-
+        <hr>
         <div id="uploaded-sources">
             {% if sources %}
-                <h2>Uploaded Sources:</h2>
                 {% for source in sources %}
                     <div class="source-box">
                         <h3>{{ source.source }}</h3>

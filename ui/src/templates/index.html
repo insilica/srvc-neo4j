@@ -38,11 +38,11 @@
       sidebar.style.padding = '10px';
       sidebar.style.flexDirection = 'column';
       sidebar.style.fontFamily = "'Roboto','Arial',sans-serif";
-      sidebar.style.lineheight = "2rem";
-      sidebar.style.fontSize = "1.4rem"; 
+      sidebar.style.lineheight = "1rem";
+      sidebar.style.fontSize = "1rem"; 
       sidebar.style.backgroundColor = "#0F0F0F"
       sidebar.style.color = "#f1f1f1"
-      sidebar.style.width = '200px'; // Width of the sidebar
+      sidebar.style.width = '150px'; // Width of the sidebar
       sidebar.style.overflow = 'auto';
     
       // Create links (tabs)
@@ -82,8 +82,9 @@
       document.body.appendChild(sidebar);
     
       // Adjust the rest of the body to not be overlapped by sidebar
-      document.body.style.paddingLeft = '210px';  // adjust this value based on the width of your sidebar
-    
+      document.body.style.paddingLeft = '170px';  // adjust this value based on the width of your sidebar
+      document.body.style.paddingTop = '0px';
+
       // Adding styles for hover and active states
       const style = document.createElement('style');
       style.innerHTML = `
