@@ -171,7 +171,7 @@ table, th, td {
 
 <body>
   <div class="sidebar">
-    <form id="review-form" target="/review" method="post">
+    <form id="review-form" target="{{review_path}}/review" method="post">
       <input type="hidden" id="doc-id" name="doc-id" value="{{ document['id'] }}">
       {% for label in labels %}
         <div>
@@ -198,7 +198,7 @@ table, th, td {
 
         // Start a new AJAX request
         let xhr = new XMLHttpRequest();
-        xhr.open("POST", "/review/submit_review"); // Update to your form action
+        xhr.open("POST", "{{review_path}}/submit_review"); // Update to your form action
         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
         // When the request is finished, log the response to the console

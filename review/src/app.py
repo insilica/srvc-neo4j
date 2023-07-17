@@ -60,7 +60,7 @@ def get_unreviewed_document():
 
 @app.route('/')
 def review_form():
-    return render_template('review.html', document=get_unreviewed_document(), labels=get_labels())
+    return render_template('review.html', document=get_unreviewed_document(), labels=get_labels(), review_path=os.getenv('REVIEW_PATH'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')  # Ensure the server is accessible externally
