@@ -23,7 +23,6 @@ def get_node_by_id(tx, node_id):
 
 @app.route('/submit_review', methods=['POST'])
 def review_post():
-    print("HOLLA AT YA BOI")
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     doc_id = request.form['doc-id']
     tx = graph.begin()
