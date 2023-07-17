@@ -84,10 +84,18 @@ def get_user(tx, email):
     if records:
       return records[0]['n']
 
+def login_response(user):
+    token = jwt.encode({'user_id': user['id'], 'email': user['email']}, app.config['SECRET_KEY'], algorithm='HS256')
+
+    resp = make_response(redirect(url_for('home')))
+    resp.set_cookie('token', token)
+
+    return resp
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('email').lower()
         password = request.form.get('password')
         graph = Graph("bolt://localhost:5001", auth=("neo4j", "test1234"))
         tx = graph.begin()
@@ -95,13 +103,7 @@ def login():
         graph.commit(tx)
 
         if user and check_password_hash(user['password_hash'], password):
-            # User ID is encoded into the token here
-            token = jwt.encode({'user_id': user['id']}, app.config['SECRET_KEY'], algorithm='HS256')
-
-            resp = make_response(redirect(url_for('home')))
-            resp.set_cookie('token', token)  # Set the JWT as a cookie
-
-            return resp
+            return login_response(user)
 
         flash('Invalid email or password.')
     return render_template('login.html')
@@ -109,7 +111,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('email').lower()
         graph = Graph("bolt://localhost:5001", auth=("neo4j", "test1234"))
         tx = graph.begin()
         user = get_user(tx, email)
@@ -123,12 +125,7 @@ def register():
         graph.commit(tx)
 
         flash('Registered successfully.')
-        token = jwt.encode({'user_id': user['id']}, app.config['SECRET_KEY'], algorithm='HS256')
-
-        resp = make_response(redirect(url_for('home')))
-        resp.set_cookie('token', token)  # Set the JWT as a cookie
-
-        return resp
+        return login_response(user)
     return render_template('register.html')
 
 @app.route('/', methods=['GET', 'POST'])
