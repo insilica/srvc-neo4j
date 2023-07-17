@@ -1,4 +1,5 @@
 from flask import Flask, redirect, request, render_template, jsonify
+from json2html import json2html
 from jsonlines.jsonlines import InvalidLineError
 from werkzeug.utils import secure_filename
 from py2neo import Graph, Node, Relationship
@@ -19,7 +20,7 @@ def get_node_by_id(tx, node_id):
     result = tx.run("MATCH (n {id: $id}) RETURN n", id=node_id)
     records = result.data()
     return records[0]['n'] if records else None
-    
+
 @app.route('/submit_review', methods=['POST'])
 def review_post():
     print("HOLLA AT YA BOI")
@@ -54,6 +55,7 @@ def get_unreviewed_document():
     q = "MATCH (o:Document) WHERE NOT EXISTS ((o)<-[:HAS_DOCUMENT]-(:Answer)) RETURN o"
     documents = [dict(x['o']) for x in graph.run(q).data()]
     for document in documents:
+        document['html'] = json2html.convert(document['content'])
         document['content'] = json.loads(document['content'])
     return documents[0] if documents else None
 

@@ -30,7 +30,7 @@ body {
   box-sizing: border-box;
   margin-left: 5px; /* Decrease margin */
 }
-  
+
 
 input[type=text] {
   width: 100%;
@@ -92,6 +92,15 @@ label {
   height: 1px;
   background-color: #FF8C00;
   margin: 10px 0;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 0;
 }
 </style>
 
@@ -180,7 +189,7 @@ label {
   </div>
 
   <div class="main-content">
-    <pre style="color: #e6e6e6;">{{ document | tojson(indent=2) }}</pre>
+    {{document.html|safe}}
   </div>
 
   <script>
