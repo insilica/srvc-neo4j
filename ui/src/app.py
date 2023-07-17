@@ -12,18 +12,18 @@ def embed_response(service_url):
         json_data = request.get_json(silent=True)
         if json_data is not None:
             headers = {'Content-Type': 'application/json'}
-            response = requests.post(service_url, data=json.dumps(json_data).encode(), headers=headers)
+            response = requests.post(service_url, cookies=request.cookies, allow_redirects=False, data=json.dumps(json_data).encode(), headers=headers)
         elif files:
-           response = requests.post(service_url, data=request.form, files=files)
+           response = requests.post(service_url, cookies=request.cookies, allow_redirects=False, data=request.form, files=files)
         else:
-           response = requests.post(service_url, data=request.form)
+           response = requests.post(service_url, cookies=request.cookies, allow_redirects=False, data=request.form)
     elif request.method == 'HEAD':
-        response = requests.head(service_url)
+        response = requests.head(service_url, cookies=request.cookies, allow_redirects=False)
     else:
-        response = requests.get(service_url, params=request.args)
+        response = requests.get(service_url, cookies=request.cookies, allow_redirects=False, params=request.args)
 
     if not response.headers.get('content-type').startswith('text/html'):
-        return Response(response.content, mimetype=response.headers.get('content-type'))
+        return Response(response.content, headers=dict(response.headers), status=response.status_code)
 
     soup = BeautifulSoup(response.content, 'html.parser')
     if soup.head is not None:
@@ -54,8 +54,7 @@ def embed_response(service_url):
                            upload_path=upload_path,
                            labels_path=labels_path,
                            settings_path=settings_path)
-
-    return Response(final_content, mimetype=response.headers.get('content-type'))
+    return Response(final_content, headers=dict(response.headers), status=response.status_code)
 
 @app.route('/<string:service_name>', defaults={'subpath': None}, methods=['GET', 'POST', 'HEAD'])
 @app.route('/<string:service_name>/<path:subpath>', methods=['GET', 'POST', 'HEAD'])
@@ -71,19 +70,8 @@ def favicon():
 
 @app.route('/')
 def index():
-    rel_path = '/'
-    return redirect(rel_path + 'document')
-    document_path = rel_path + os.getenv('DOCUMENT_PATH')
-    review_path = rel_path + os.getenv('REVIEW_PATH')
-    upload_path = rel_path + os.getenv('UPLOAD_PATH')
-    labels_path = rel_path + os.getenv('LABELS_PATH')
-    settings_path = rel_path + os.getenv('SETTINGS_PATH')
-    return render_template('index.html',
-                           document_path=document_path,
-                           review_path=review_path,
-                           upload_path=upload_path,
-                           labels_path=labels_path,
-                           settings_path=settings_path)
+    rel_path = './'
+    return redirect(rel_path + 'document'), 303
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')  # Ensure the server is accessible externally

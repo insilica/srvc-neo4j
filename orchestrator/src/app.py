@@ -182,15 +182,15 @@ def project_service(user, project, subpath):
                 json_data = request.get_json(silent=True)
                 if json_data is not None:
                     headers = {'Content-Type': 'application/json'}
-                    response = requests.post(url, data=json.dumps(json_data).encode(), headers=headers)
+                    response = requests.post(url, cookies=request.cookies, allow_redirects=False, data=json.dumps(json_data).encode(), headers=headers)
                 elif files:
-                    response = requests.post(url, data=request.form, files=files)
+                    response = requests.post(url, cookies=request.cookies, allow_redirects=False, data=request.form, files=files)
                 else:
-                    response = requests.post(url, data=request.form)
+                    response = requests.post(url, cookies=request.cookies, allow_redirects=False, data=request.form)
             elif request.method == 'HEAD':
-                response = requests.head(url)
+                response = requests.head(url, cookies=request.cookies, allow_redirects=False)
             else:  # GET request
-                response = requests.get(url, params=request.args)
+                response = requests.get(url, cookies=request.cookies, allow_redirects=False, params=request.args)
             break  # If the request is successful, break out of the loop
         except RequestException:
             if i < max_retries - 1:  # No need to retry for the last time
@@ -199,7 +199,7 @@ def project_service(user, project, subpath):
             else:
                 return "Service is not available. Please try again later.", 503
 
-    return Response(response.content, mimetype=response.headers.get('content-type'), headers={'Accept': response.headers.get('Accept')})
+    return Response(response.content, headers=dict(response.headers), status=response.status_code)
 
 run_docker_compose('docker')
 
