@@ -2,13 +2,14 @@ from flask import Flask, request, render_template, render_template_string
 from jsonlines.jsonlines import InvalidLineError
 from werkzeug.utils import secure_filename
 from py2neo import Graph, Node, Relationship
+from json2html import json2html
 from py2neo.bulk import merge_nodes
 from uuid import uuid4
 import json, jsonlines, os, uuid
 
 app = Flask(__name__)
 
-template = "{{doc.content.content}}"
+template = "{{doc.content}}"
 
 def parse_content(d):
     if d['content_type'] == 'json':
@@ -23,6 +24,7 @@ def list_documents():
     documents = [parse_content(d) for d in documents]
 
     for d in documents:
+        d['html'] = json2html.convert(d['content'])
         d['rendered_content'] = render_template_string(template, doc=d)
 
     return render_template('documents.html', documents=documents)
