@@ -5,10 +5,27 @@ from werkzeug.utils import secure_filename
 from py2neo import Graph, Node, Relationship
 from py2neo.bulk import merge_nodes
 from uuid import uuid4
-import json, jsonlines, os, uuid
+import json, jsonlines, jwt, os, uuid
 import logging
 
 app = Flask(__name__)
+
+def get_current_email(request):
+    auth_token = request.cookies.get('token')
+    if not auth_token:
+      raise Exception('Invalid token. Please log in again.')
+
+    try:
+        payload = jwt.decode(auth_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+        user_email = payload.get('email')
+        if not user_email:
+            raise Exception('No email in the token')
+        return user_email
+
+    except jwt.ExpiredSignatureError:
+        raise Exception('Signature expired. Please log in again.')
+    except jwt.InvalidTokenError:
+        raise Exception('Invalid token. Please log in again.')
 
 def get_labels():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
@@ -21,8 +38,21 @@ def get_node_by_id(tx, node_id):
     records = result.data()
     return records[0]['n'] if records else None
 
+def get_or_create_user(tx, email):
+    result = tx.run("MATCH (n:User {email: $email}) RETURN n", email=email)
+    records = result.data()
+    if records:
+      return records[0]['n']
+    else:
+      return Node('User', id=str(uuid4()), email=email)
+
 @app.route('/submit_review', methods=['POST'])
 def review_post():
+    try:
+        email = get_current_email(request)
+    except:
+        return redirect('/login'), 303
+
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     doc_id = request.form['doc-id']
     tx = graph.begin()
@@ -44,6 +74,8 @@ def review_post():
         tx.create(rel)
         rel = Relationship(node, "HAS_LABEL", label_node)
         tx.create(rel)
+        user_node = get_or_create_user(tx, email)
+        tx.create(Relationship(node, "HAS_USER", user_node))
 
     graph.commit(tx)
 
@@ -60,6 +92,10 @@ def get_unreviewed_document():
 
 @app.route('/')
 def review_form():
+    try:
+        email = get_current_email(request)
+    except:
+        return redirect('/login'), 303
     return render_template('review.html', document=get_unreviewed_document(), labels=get_labels(), review_path=os.getenv('REVIEW_PATH'))
 
 if __name__ == '__main__':
