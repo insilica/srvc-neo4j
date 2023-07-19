@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, redirect, url_for, jsonify
 from py2neo import Graph, Node, NodeMatcher
 from uuid import uuid4
-import json
+import json, jwt, os
 
 app = Flask(__name__)
 
@@ -18,16 +18,49 @@ default_settings = [
     {'key': 'invite_link', 'value': None, 'options': None, 'enabled': False}
 ]
 
+def get_current_email(request):
+    auth_token = request.cookies.get('token')
+    if not auth_token:
+      raise Exception('Invalid token. Please log in again.')
+
+    try:
+        payload = jwt.decode(auth_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+        user_email = payload.get('email')
+        if not user_email:
+            raise Exception('No email in the token')
+        return user_email
+
+    except jwt.ExpiredSignatureError:
+        raise Exception('Signature expired. Please log in again.')
+    except jwt.InvalidTokenError:
+        raise Exception('Invalid token. Please log in again.')
+
+def get_user(tx, email):
+    result = tx.run("MATCH (n:User {email: $email}) RETURN n", email=email)
+    records = result.data()
+    if records:
+      return records[0]['n']
+
 @app.before_first_request
 def create_settings():
+    try:
+        email = get_current_email(request)
+    except:
+        return redirect('/login'), 303
+
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+    tx = graph.begin()
+
+    user = get_user(tx, email)
+    if not (user and user.get('isAdmin') or user.get('isOwner')):
+        return 'Forbidden', 403
+
     matcher = NodeMatcher(graph)
     for group in settings_group:
         for setting_key in group['settings']:
             setting = next((item for item in default_settings if item['key'] == setting_key), None)
             if setting:
                 if matcher.match("Setting", key=setting_key).first() is None:
-                    tx = graph.begin()
                     setting_node = Node(
                         "Setting",
                         key=setting_key,
@@ -37,11 +70,20 @@ def create_settings():
                         group=group.get('name')
                     )
                     tx.create(setting_node)
-                    tx.commit()
+    tx.commit()
 
 @app.route('/', methods=['GET', 'POST'])
 def settings():
+    try:
+        email = get_current_email(request)
+    except:
+        return redirect('/login'), 303
+
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+
+    user = get_user(graph, email)
+    if not (user and user.get('isAdmin') or user.get('isOwner')):
+        return 'Forbidden', 403
 
     if request.method == 'POST':
         key = request.form.get('key')
