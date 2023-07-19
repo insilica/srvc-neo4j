@@ -44,6 +44,15 @@ services:
     env_file: ./.env
     restart: 'on-failure'
 
+  member:
+    build: ../../../member
+    volumes:
+      - ../../../member:/app
+    depends_on:
+      - neo4j
+    env_file: ./.env
+    restart: 'on-failure'
+
   review:
     build: ../../../review
     volumes:
@@ -91,6 +100,7 @@ services:
       - export
       - import-events
       - labels
+      - member
       - review
       - settings
     env_file: ./.env

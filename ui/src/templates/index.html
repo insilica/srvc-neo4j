@@ -14,7 +14,7 @@
     box-sizing: border-box;
     flex-grow: 1;  /* This allows the main area to take up the rest of the space */
   }
-  
+
   </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   {{extra_head|safe}}
@@ -39,12 +39,12 @@
       sidebar.style.flexDirection = 'column';
       sidebar.style.fontFamily = "'Roboto','Arial',sans-serif";
       sidebar.style.lineheight = "1rem";
-      sidebar.style.fontSize = "1rem"; 
+      sidebar.style.fontSize = "1rem";
       sidebar.style.backgroundColor = "#0F0F0F"
       sidebar.style.color = "#f1f1f1"
       sidebar.style.width = '150px'; // Width of the sidebar
       sidebar.style.overflow = 'auto';
-    
+
       // Create links (tabs)
       const links = [
         {name: 'Upload', url: '{{upload_path}}'},
@@ -54,11 +54,12 @@
         {name: 'Settings', url: '{{settings_path}}'},
         {name: 'Import Events', url: '{{import_events_path}}'},
         {name: 'Export', url: '{{export_path}}'},
+        {name: 'Members', url: '{{member_path}}'},
       ];
-    
+
       const pathParts = window.location.pathname.split('/');
       const activeTabName = pathParts.length >= 3 ? pathParts[3] : pathParts[1];  // Get the 3rd child of the url
-    
+
       links.forEach(link => {
         const tab = document.createElement('div');
         tab.className = 'tab';
@@ -72,15 +73,15 @@
           window.location.href = link.url;
         });
         sidebar.appendChild(tab);
-    
+
         if (link.name.toLowerCase() === activeTabName) {  // Check if the link name matches the 3rd child of the url
           tab.classList.add('active');  // If so, set this tab as active
         }
       });
-    
+
       // Append sidebar to the body
       document.body.appendChild(sidebar);
-    
+
       // Adjust the rest of the body to not be overlapped by sidebar
       document.body.style.paddingLeft = '170px';  // adjust this value based on the width of your sidebar
       document.body.style.paddingTop = '0px';

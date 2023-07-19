@@ -42,6 +42,7 @@ def embed_response(service_url):
     export_path = rel_path + os.getenv('EXPORT_PATH')
     upload_path = rel_path + os.getenv('UPLOAD_PATH')
     labels_path = rel_path + os.getenv('LABELS_PATH')
+    member_path = rel_path + os.getenv('MEMBER_PATH')
     settings_path = rel_path + os.getenv('SETTINGS_PATH')
 
     final_content = render_template('index.html',
@@ -53,6 +54,7 @@ def embed_response(service_url):
                            export_path=export_path,
                            upload_path=upload_path,
                            labels_path=labels_path,
+                           member_path=member_path,
                            settings_path=settings_path)
     return Response(final_content, headers=dict(response.headers), status=response.status_code)
 

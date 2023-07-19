@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  background-color: #0F0F0F;
+  color: #e6e6e6;
+  font-family: 'Ubuntu Mono', monospace;
+  font-size: 1em;
+  margin: 0;
+  padding: 20px;
+  height: 100vh;
+}
+
+.sidebar {
+  float: left;
+  width: 30%;
+  height: 100vh;
+  background-color: #333;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.main-content {
+  float: right;
+  width: 65%; /* Increase width */
+  padding: 20px;
+  background-color: #333;
+  color: #e6e6e6;
+  box-sizing: border-box;
+  margin-left: 5px; /* Decrease margin */
+}
+
+
+input[type=text] {
+  width: 100%;
+  padding: 6px 10px;
+  margin: 2px 0;
+  background-color: #444;
+  color: #e6e6e6;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+}
+
+.button-group {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.boolean-button {
+  background-color: #444;
+  color: #e6e6e6;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  padding: 5px 10px;
+  margin: 0;
+}
+
+.boolean-button:hover {
+  background-color: #555;
+}
+
+.boolean-button.active {
+  background-color: #FF8C00;
+}
+
+input[type=submit] {
+  background-color: #444;
+  color: #e6e6e6;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  width: 100%;
+  padding: 10px;
+  margin-top: 20px;
+}
+
+input[type=submit]:hover {
+  background-color: #555;
+}
+
+label {
+  color: #e6e6e6;
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 5px;
+  font-size: 0.8rem
+}
+
+.separator {
+  height: 1px;
+  background-color: #FF8C00;
+  margin: 10px 0;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 0;
+}
+</style>
+</head>
+
+<body>
+
+  <h1>Members</h1>
+  <div id="members-container">
+    {% for member in members %}
+    <div class="member">
+      <p>{{ member.email }}{% if member.isOwner %} (Owner){% endif %}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2>Add Member</h2>
+  <form method="POST" action="{{member_path}}/add-member">
+      <label for="email">Email:</label><br>
+      <input type="text" id="email" name="email"><br>
+      <input type="submit" value="Add">
+  </form>
+
+</body>
+</html>
