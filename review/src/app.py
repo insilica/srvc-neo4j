@@ -10,7 +10,7 @@ import logging
 
 app = Flask(__name__)
 
-def get_current_email(request):
+def get_current_email():
     auth_token = request.cookies.get('token')
     if not auth_token:
       raise Exception('Invalid token. Please log in again.')
@@ -55,20 +55,20 @@ def get_user(tx, email):
 @app.route('/submit_review', methods=['POST'])
 def review_post():
     try:
-        email = get_current_email(request)
+        email = get_current_email()
     except:
         return redirect('/login'), 303
 
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     doc_id = request.form['doc-id']
-    tx = graph.begin()
 
-    user = get_user(tx, email)
+    user = get_user(graph, email)
     if not (user and user.get('isMember')):
         return 'Forbidden', 403
 
     labels = get_labels()
 
+    tx = graph.begin()
     for label in labels:
         # Decide answer type
         v = request.form.get('label-' + label['id'])
@@ -103,7 +103,7 @@ def get_unreviewed_document():
 @app.route('/')
 def review_form():
     try:
-        email = get_current_email(request)
+        email = get_current_email()
     except:
         return redirect('/login'), 303
 

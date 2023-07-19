@@ -18,7 +18,7 @@ default_settings = [
     {'key': 'invite_link', 'value': None, 'options': None, 'enabled': False}
 ]
 
-def get_current_email(request):
+def get_current_email():
     auth_token = request.cookies.get('token')
     if not auth_token:
       raise Exception('Invalid token. Please log in again.')
@@ -44,7 +44,7 @@ def get_user(tx, email):
 @app.before_first_request
 def create_settings():
     try:
-        email = get_current_email(request)
+        email = get_current_email()
     except:
         return redirect('/login'), 303
 
@@ -52,7 +52,7 @@ def create_settings():
     tx = graph.begin()
 
     user = get_user(tx, email)
-    if not (user and user.get('isAdmin') or user.get('isOwner')):
+    if not (user and (user.get('isAdmin') or user.get('isOwner'))):
         return 'Forbidden', 403
 
     matcher = NodeMatcher(graph)
@@ -75,14 +75,14 @@ def create_settings():
 @app.route('/', methods=['GET', 'POST'])
 def settings():
     try:
-        email = get_current_email(request)
+        email = get_current_email()
     except:
         return redirect('/login'), 303
 
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
 
     user = get_user(graph, email)
-    if not (user and user.get('isAdmin') or user.get('isOwner')):
+    if not (user and (user.get('isAdmin') or user.get('isOwner'))):
         return 'Forbidden', 403
 
     if request.method == 'POST':

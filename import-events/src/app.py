@@ -5,13 +5,36 @@ from werkzeug.utils import secure_filename
 from py2neo import Graph, Node, Relationship
 from py2neo.bulk import merge_nodes
 from uuid import uuid4
-import json, jsonlines, os, re, requests, uuid
+import json, jsonlines, jwt, os, re, requests, uuid
 
 app = Flask(__name__)
 
 app.config['UPLOAD_FOLDER'] = '/tmp/srvc-upload'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+def get_current_email():
+    auth_token = request.cookies.get('token')
+    if not auth_token:
+      raise Exception('Invalid token. Please log in again.')
+
+    try:
+        payload = jwt.decode(auth_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+        user_email = payload.get('email')
+        if not user_email:
+            raise Exception('No email in the token')
+        return user_email
+
+    except jwt.ExpiredSignatureError:
+        raise Exception('Signature expired. Please log in again.')
+    except jwt.InvalidTokenError:
+        raise Exception('Invalid token. Please log in again.')
+
+def get_user(tx, email):
+    result = tx.run("MATCH (n:User {email: $email}) RETURN n", email=email)
+    records = result.data()
+    if records:
+      return records[0]['n']
 
 def get_node_by_hash(tx, hash):
     result = tx.run("MATCH (n {hash: $hash}) RETURN n", hash=hash)
@@ -98,12 +121,33 @@ def delete_from_neo4j(source_name, graph):
 
 @app.route('/', methods=['GET'])
 def home():
+    try:
+        email = get_current_email()
+    except:
+        return redirect('/login'), 303
+
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+
+    user = get_user(graph, email)
+    if not (user and user.get('isMember')):
+        return 'Forbidden', 403
+
     result = graph.run("MATCH (s:DocumentSource)-[:SOURCE_OF]->(d:Document) RETURN s.name as source, count(d) as documents").data()
     return render_template('import-events.html', sources=result, import_events_path=os.getenv("IMPORT_EVENTS_PATH"))
 
 @app.route('/import', methods=['POST'])
 def import_events():
+    try:
+        email = get_current_email()
+    except:
+        return redirect('/login'), 303
+
+    graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+
+    user = get_user(graph, email)
+    if not (user and user.get('isMember')):
+        return 'Forbidden', 403
+
     if request.method == 'POST':
         json = request.get_json()
         if json.get('sysrev_id'):
@@ -123,7 +167,6 @@ def import_events():
                             f.write(chunk)
 
                 # Now process the file
-                graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
                 upload_to_neo4j(file_path, filename, graph)
 
                 return redirect(url_for('home'))
@@ -134,11 +177,20 @@ def import_events():
 
 @app.route('/delete/<source_name>', methods=['POST'])
 def delete_source(source_name):
-    if request.method == 'POST':
-        graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
-        delete_from_neo4j(source_name, graph)
+    try:
+        email = get_current_email()
+    except:
+        return redirect('/login'), 303
 
-        return redirect(url_for('home'))
+    graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+
+    user = get_user(graph, email)
+    if not (user and user.get('isMember')):
+        return 'Forbidden', 403
+
+    delete_from_neo4j(source_name, graph)
+
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')  # Ensure the server is accessible externally

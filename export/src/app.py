@@ -5,17 +5,69 @@ from py2neo import Graph, Node, Relationship
 from py2neo.bulk import merge_nodes
 from uuid import uuid4
 from io import StringIO
-import csv, json, jsonlines, os, uuid
+import csv, json, jsonlines, jwt, os, uuid
+
+def get_current_email():
+    auth_token = request.cookies.get('token')
+    if not auth_token:
+      raise Exception('Invalid token. Please log in again.')
+
+    try:
+        payload = jwt.decode(auth_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+        user_email = payload.get('email')
+        if not user_email:
+            raise Exception('No email in the token')
+        return user_email
+
+    except jwt.ExpiredSignatureError:
+        raise Exception('Signature expired. Please log in again.')
+    except jwt.InvalidTokenError:
+        raise Exception('Invalid token. Please log in again.')
+
+def get_user(tx, email):
+    result = tx.run("MATCH (n:User {email: $email}) RETURN n", email=email)
+    records = result.data()
+    if records:
+      return records[0]['n']
+
+def get_project_visibility(tx):
+    result = tx.run("MATCH (n:Setting {group: $group, key: $k}) RETURN n", group='Project', k='visibility')
+    records = result.data()
+    if records:
+      return records[0]['n']
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
+    graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+    visibility = get_project_visibility(graph)
+
+    if not visibility or visibility['value'] != 'public':
+        try:
+            email = get_current_email()
+        except:
+            return redirect('/login'), 303
+        user = get_user(graph, email)
+        if not (user and user.get('isMember')):
+            return 'Forbidden', 403
+
     return render_template('export.html', export_path=os.getenv('EXPORT_PATH'))
 
 @app.route('/articles')
 def export_articles():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+    visibility = get_project_visibility(graph)
+
+    if not visibility or visibility['value'] != 'public':
+        try:
+            email = get_current_email()
+        except:
+            return redirect('/login'), 303
+        user = get_user(graph, email)
+        if not (user and user.get('isMember')):
+            return 'Forbidden', 403
+
     q = "MATCH (o:Document) return o"
     documents = [dict(x['o']) for x in graph.run(q).data()]
 
@@ -38,6 +90,17 @@ def export_articles():
 @app.route('/article-answers')
 def export_article_answers():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+    visibility = get_project_visibility(graph)
+
+    if not visibility or visibility['value'] != 'public':
+        try:
+            email = get_current_email()
+        except:
+            return redirect('/login'), 303
+        user = get_user(graph, email)
+        if not (user and user.get('isMember')):
+            return 'Forbidden', 403
+
     q = """
     MATCH (a:Answer)-[:HAS_DOCUMENT]->(d:Document),
           (a)-[:HAS_LABEL]->(l:Label),

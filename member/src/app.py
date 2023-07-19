@@ -10,7 +10,7 @@ import logging
 
 app = Flask(__name__)
 
-def get_current_email(request):
+def get_current_email():
     auth_token = request.cookies.get('token')
     if not auth_token:
       raise Exception('Invalid token. Please log in again.')
@@ -26,6 +26,12 @@ def get_current_email(request):
         raise Exception('Signature expired. Please log in again.')
     except jwt.InvalidTokenError:
         raise Exception('Invalid token. Please log in again.')
+
+def get_user(tx, email):
+    result = tx.run("MATCH (n:User {email: $email}) RETURN n", email=email)
+    records = result.data()
+    if records:
+      return records[0]['n']
 
 def get_users():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
@@ -47,7 +53,17 @@ def set_member(tx, email):
 @app.route('/add-member', methods=['POST'])
 def add_member():
     email = request.form['email']
+    try:
+        email = get_current_email()
+    except:
+        return redirect('/login'), 303
+
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+
+    user = get_user(graph, email)
+    if not (user and user.get('isMember')):
+        return 'Forbidden', 403
+
     tx = graph.begin()
     set_member(tx, email)
     graph.commit(tx)
@@ -55,6 +71,17 @@ def add_member():
 
 @app.route('/')
 def home():
+    try:
+        email = get_current_email()
+    except:
+        return redirect('/login'), 303
+
+    graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+
+    user = get_user(graph, email)
+    if not (user and user.get('isMember')):
+        return 'Forbidden', 403
+        
     members = get_users()
     return render_template('list.html', members=members, member_path=os.getenv('MEMBER_PATH'))
 
