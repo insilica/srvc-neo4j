@@ -46,6 +46,12 @@ def get_or_create_user(tx, email):
     else:
       return Node('User', id=str(uuid4()), email=email)
 
+def get_user(tx, email):
+    result = tx.run("MATCH (n:User {email: $email}) RETURN n", email=email)
+    records = result.data()
+    if records:
+      return records[0]['n']
+
 @app.route('/submit_review', methods=['POST'])
 def review_post():
     try:
@@ -56,6 +62,10 @@ def review_post():
     graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
     doc_id = request.form['doc-id']
     tx = graph.begin()
+
+    user = get_user(tx, email)
+    if not (user and user.get('isMember')):
+        return 'Forbidden', 403
 
     labels = get_labels()
 
@@ -96,6 +106,12 @@ def review_form():
         email = get_current_email(request)
     except:
         return redirect('/login'), 303
+
+    graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+    user = get_user(graph, email)
+    if not (user and user.get('isMember')):
+        return 'Forbidden', 403
+
     return render_template('review.html', document=get_unreviewed_document(), labels=get_labels(), review_path=os.getenv('REVIEW_PATH'))
 
 if __name__ == '__main__':
