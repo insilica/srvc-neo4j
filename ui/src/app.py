@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from flask import Flask, redirect, request, render_template, Response
-import json, os, requests
+import json, jwt, os, requests
 
 app = Flask(__name__)
 
@@ -59,6 +59,16 @@ def embed_response(service_url):
 @app.route('/<string:service_name>', defaults={'subpath': None}, methods=['GET', 'POST', 'HEAD'])
 @app.route('/<string:service_name>/<path:subpath>', methods=['GET', 'POST', 'HEAD'])
 def user_project_service(service_name, subpath):
+    if service_name.lower() == 'internal':
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            auth_token = auth_header.split(' ')[1]
+            payload = jwt.decode(auth_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+            if payload.get('internal_access') != True:
+                return 'Not Found', 404
+        else:
+            return 'Not Found', 404
+
     if subpath:
         return embed_response(f"http://{service_name}:5000/{subpath}")
     else:

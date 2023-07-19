@@ -35,6 +35,15 @@ services:
     env_file: ./.env
     restart: 'on-failure'
 
+  internal:
+    build: ../../../internal
+    volumes:
+      - ../../../internal:/app
+    depends_on:
+      - neo4j
+    env_file: ./.env
+    restart: 'on-failure'
+
   review:
     build: ../../../review
     volumes:

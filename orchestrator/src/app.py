@@ -18,6 +18,23 @@ import time
 
 load_dotenv()
 
+def get_current_email():
+    auth_token = request.cookies.get('token')
+    if not auth_token:
+      raise Exception('Invalid token. Please log in again.')
+
+    try:
+        payload = jwt.decode(auth_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+        user_email = payload.get('email')
+        if not user_email:
+            raise Exception('No email in the token')
+        return user_email
+
+    except jwt.ExpiredSignatureError:
+        raise Exception('Signature expired. Please log in again.')
+    except jwt.InvalidTokenError:
+        raise Exception('Invalid token. Please log in again.')
+
 def copy_base_files(project_path):
     os.makedirs(project_path, exist_ok=True)
     shutil.copy('base-docker-compose.yml', os.path.join(project_path, 'docker-compose.yml'))
@@ -128,13 +145,30 @@ def register():
         return login_response(user)
     return render_template('register.html')
 
+def init_project(user, project):
+    generate_docker_compose(user, project)
+    port = get_project_port(user, project)
+    init_data = {
+      'owner_email': get_current_email(),
+    }
+    max_retries = 20
+    for i in range(max_retries):
+        try:
+          token = jwt.encode({'internal_access': True}, app.config['SECRET_KEY'], algorithm='HS256')
+          return requests.post(f"http://localhost:{port}/internal/init", data=json.dumps(init_data), headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'})
+        except RequestException:
+            if i < max_retries - 1:  # No need to retry for the last time
+                time.sleep(5 * (i + 1))  # Wait for a longer time after each retry
+            else:
+                return "Service is not available. Please try again later.", 503
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
         user_name = request.form['user_name']
         project_name = request.form['project_name']
-        generate_docker_compose(user_name, project_name)
-        return redirect(url_for('home'))
+        init_project(user_name, project_name)
+        return redirect('/' + user_name + '/' + project_name)
 
     base_path = os.path.join('..', 'projects')
     projects = [os.path.join(root, dir).replace(base_path + os.sep, '')
