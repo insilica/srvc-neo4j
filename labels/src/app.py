@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, redirect, url_for, jsonify
 from py2neo import Graph, Node
 from uuid import uuid4
+import jwt, os
 
 app = Flask(__name__)
 
@@ -59,7 +60,7 @@ def label_editor():
     q = f"{q} l.description AS description, l.type AS type"
     labels = graph.run(q).data()
     labels = list(enumerate(labels, start=1))  # Add index for each label
-    return render_template('labels.html', labels=labels)
+    return render_template('labels.html', labels=labels, labels_path=os.getenv('LABELS_PATH'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

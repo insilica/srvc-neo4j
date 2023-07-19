@@ -94,7 +94,7 @@
             background: #eee;
             border-radius: 5px;
         }
-        
+
         .dialog-create-form input[type=submit], .dialog-create-form input[type=button] {
             padding: 10px 20px;
             border: none;
@@ -104,11 +104,11 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        
+
         .dialog-create-form input[type=submit]:hover, .dialog-create-form input[type=button]:hover {
             background-color: #e07c00;
         }
-        
+
         .dialog-create-form input[type=submit]:active, .dialog-create-form input[type=button]:active {
             background-color: #ff9d40;
         }
@@ -118,13 +118,13 @@
             border: none; /* Remove the border */
             height: 1px; /* Set the height of the hr */
             color: #FF8C00; /* Set the color of the hr */
-            background-color: #FF8C00; 
+            background-color: #FF8C00;
             margin: 0;
         }
-        
+
     </style>
     <script>
-        
+
         function newForm(header='Create Label'){
             var modal = document.getElementById("myModal");
             modal.style.display = "block";
@@ -222,8 +222,7 @@
                 <span class="close">&#10006;</span>
             </div>
             <hr>
-            <!-- TODO update /labels/create to just /create-->
-            <form id="create-form" method="POST" action='/labels/create' class="dialog-create-form">
+            <form id="create-form" method="POST" action='{{labels_path}}/create' class="dialog-create-form">
                 <input type="hidden" id="id" name="id">
                 <label for="name">Name</label>
                 <input type="text" id="name" name="name" required>
