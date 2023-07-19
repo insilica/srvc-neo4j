@@ -237,6 +237,10 @@ def project_service(user, project, subpath):
 
     return Response(response.content, headers=dict(response.headers), status=response.status_code)
 
+@app.route('/health')
+def health():
+   return ''
+
 run_docker_compose('docker')
 
 if __name__ == '__main__':
