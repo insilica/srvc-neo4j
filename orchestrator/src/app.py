@@ -165,8 +165,10 @@ def init_project(user, project):
 @app.route('/', methods=['GET', 'POST'])
 def home():
     try:
-        email = get_current_email(request)
+        email = get_current_email()
     except:
+        return redirect('/login'), 303
+    if not email:
         return redirect('/login'), 303
 
     if request.method == 'POST':
