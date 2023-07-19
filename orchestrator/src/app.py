@@ -164,6 +164,11 @@ def init_project(user, project):
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
+    try:
+        email = get_current_email(request)
+    except:
+        return redirect('/login'), 303
+
     if request.method == 'POST':
         user_name = request.form['user_name']
         project_name = request.form['project_name']
