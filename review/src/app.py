@@ -72,7 +72,7 @@ def review_post():
     for label in labels:
         # Decide answer type
         v = request.form.get('label-' + label['id'])
-        answer = True if v == 'on' else False if 'boolean' == label['type'] else v
+        answer = True if v == 'yes' else False if 'boolean' == label['type'] else v
 
         node = Node('Answer', id=str(uuid4()), answer=json.dumps(answer))
         tx.create(node)

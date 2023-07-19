@@ -177,7 +177,7 @@ table, th, td {
         <div>
           <label for="label-{{ label['id'] }}" title="{{ label['description'] }}">{{ label['name'] }}</label>
           {% if label['type'] == 'boolean' %}
-            <boolean-label id="{{ label['id'] }}"></boolean-label>
+            <boolean-label id="label-{{ label['id'] }}"></boolean-label>
           {% elif label['type'] == 'text' %}
             <input type="text" id="label-{{ label['id'] }}" name="label-{{ label['id'] }}" title="{{ label['description'] }}">
           {% endif %}
