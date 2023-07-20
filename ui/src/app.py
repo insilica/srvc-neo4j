@@ -36,6 +36,7 @@ def embed_response(service_url):
         content = ''
 
     rel_path = ''
+    data_path = rel_path + os.getenv('DATA_PATH')
     document_path = rel_path + os.getenv('DOCUMENT_PATH')
     import_events_path = rel_path + os.getenv('IMPORT_EVENTS_PATH')
     review_path = rel_path + os.getenv('REVIEW_PATH')
@@ -48,6 +49,7 @@ def embed_response(service_url):
     final_content = render_template('index.html',
                            extra_head=extra_head,
                            content=content,
+                           data_path=data_path,
                            document_path=document_path,
                            import_events_path=import_events_path,
                            review_path=review_path,

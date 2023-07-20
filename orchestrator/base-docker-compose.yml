@@ -8,6 +8,15 @@ services:
     environment:
       - NEO4J_AUTH=neo4j/test1234
 
+  data:
+    build: ../../../data
+    volumes:
+      - ../../../data:/app
+    depends_on:
+      - neo4j
+    env_file: ./.env
+    restart: 'on-failure'
+
   document:
     build: ../../../document
     volumes:
@@ -96,6 +105,7 @@ services:
     depends_on:
       - neo4j
       - upload
+      - data
       - document
       - export
       - import-events

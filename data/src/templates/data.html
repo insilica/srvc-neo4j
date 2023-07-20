@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    background-color: #0F0F0F;
+    color: #e6e6e6;
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 1rem;
+    margin: 0;
+    padding: 20px;
+    height: 100vh;
+}
+.document {
+  border-top: 1px solid #333;
+  border-left: 1px solid #333;
+  border-right: 1px solid #333;
+  padding: 10px;
+}
+.document:last-child {
+  border-bottom: 1px solid #333;
+}
+.pagination{
+  margin: 10px 0;
+}
+.pagination-controls {
+  text-align: right;
+  float: right;
+}
+.pagination-info {
+  display: inline-block;
+}
+.disabled {
+  color: #aaa;
+}
+
+#search-form {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+#search-input {
+  flex-grow: 1; /* Make the input field take up as much space as possible */
+  padding: 10px;
+  color: #FF8C00;
+  background-color: #1C1D1E;
+  border: 1px solid #333;
+  font-family: 'Ubuntu Mono', monospace;
+  font-size: 1rem;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 0;
+}
+</style>
+</head>
+<body>
+  <div>
+    <table>
+      <thead>
+        <th>Doc ID</th>
+        <th>User</th>
+        {% for label in labels %}
+        <th>{{label.name}}</th>
+        {% endfor %}
+      </thead>
+      <tbody>
+        {% for doc_id, users in data.items() %}
+            {% set rowloop = loop %}
+            {% for email, answers in users.items() %}
+            <tr>
+                {% if loop.first %}
+                <td rowspan="{{ users|length }}">{{ doc_id }}</td>
+                {% endif %}
+                <td>{{ email }}</td>
+                {% for label in labels %}
+                <td>{{ answers[label.id] }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    <div class="pagination-info" id="pagination-info">Showing 0-0 of 0</div>
+    <div class="pagination-controls">
+      <button id="first-page" class="disabled" disabled><<</button>
+      <button id="prev-page" class="disabled" disabled><</button>
+      <button id="next-page" class="disabled" disabled>></button>
+      <button id="last-page" class="disabled" disabled>>></button>
+    </div>
+  </div>
+  <script>
+
+    // Listen for the form submission event to perform the search
+    document.getElementById('search-form').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent the form from being submitted in the usual way
+
+      var query = document.getElementById('search-input').value;
+
+      // Perform the search here. You will need to replace this with your actual search code
+      console.log("Performing search for: " + query);
+    });
+
+    var currentPage = 0;
+    var itemsPerPage = 5; // change this to whatever number of items you want per page
+    var totalItems = {{ documents|length }};
+
+    function updatePaginationInfo() {
+      document.getElementById('pagination-info').textContent =
+        "Showing " + (currentPage * itemsPerPage + 1) + "-" +
+        Math.min((currentPage + 1) * itemsPerPage, totalItems) + " of " + totalItems;
+    }
+
+    function updatePaginationControls() {
+      document.getElementById('first-page').disabled = currentPage == 0;
+      document.getElementById('prev-page').disabled = currentPage == 0;
+      document.getElementById('next-page').disabled = (currentPage + 1) * itemsPerPage >= totalItems;
+      document.getElementById('last-page').disabled = (currentPage + 1) * itemsPerPage >= totalItems;
+    }
+
+    function paginate() {
+      // var items = Array.from(document.getElementById('documents-container').children);
+      // items.forEach(function(item, index) {
+      //   item.style.display = (index >= currentPage * itemsPerPage && index < (currentPage + 1) * itemsPerPage) ? 'block' : 'none';
+      // });
+      updatePaginationInfo();
+      updatePaginationControls();
+    }
+
+    document.getElementById('first-page').addEventListener('click', function() {
+      currentPage = 0;
+      paginate();
+    });
+
+    document.getElementById('prev-page').addEventListener('click', function() {
+      currentPage = Math.max(currentPage - 1, 0);
+      paginate();
+    });
+
+    document.getElementById('next-page').addEventListener('click', function() {
+      currentPage = Math.min(currentPage + 1, Math.ceil(totalItems / itemsPerPage) - 1);
+      paginate();
+    });
+
+    document.getElementById('last-page').addEventListener('click', function() {
+      currentPage = Math.ceil(totalItems / itemsPerPage) - 1;
+      paginate();
+    });
+
+    paginate(); // call this once to initialize the pagination
+
+  </script>
+</body>
+</html>
