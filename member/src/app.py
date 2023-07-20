@@ -39,20 +39,18 @@ def get_users():
     return [dict(x['n']) for x in users]
 
 def set_member(tx, email):
-    result = tx.run("MATCH (n:User {email: $email}) RETURN n", email=email)
-    records = result.data()
-    if records:
-        user = records[0]['n']
-        tx.run("MATCH (n:User {email: $email}) SET n.isMember = True RETURN n", email=email)
-        return user
-    else:
-        user = Node('User', id=str(uuid4()), email=email, isMember=True)
-        tx.create(user)
-        return user
+    query = """
+    MERGE (u:User {email: $email})
+    ON CREATE SET u.id = $id, u.isMember = True
+    ON MATCH SET u.isMember = True
+    RETURN u
+    """
+    result = tx.run(query, email=email, id=str(uuid4()))
+    return result.data()[0]['u']
 
 @app.route('/add-member', methods=['POST'])
 def add_member():
-    email = request.form['email']
+    member_email = request.form['email']
     try:
         email = get_current_email()
     except:
@@ -65,7 +63,7 @@ def add_member():
         return 'Forbidden', 403
 
     tx = graph.begin()
-    set_member(tx, email)
+    set_member(tx, member_email)
     graph.commit(tx)
     return redirect('../' + os.getenv('MEMBER_PATH')), 303
 
@@ -81,7 +79,7 @@ def home():
     user = get_user(graph, email)
     if not (user and user.get('isMember')):
         return 'Forbidden', 403
-        
+
     members = get_users()
     return render_template('list.html', members=members, member_path=os.getenv('MEMBER_PATH'))
 
