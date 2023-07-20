@@ -129,7 +129,7 @@ def export_article_answers():
 
     for doc_id, email_answers in grouped.items():
         for email, answers in email_answers.items():
-            row = [doc_id, email] + [answers.get(label_name, '') for label_name in column_names[1:]]
+            row = [doc_id, email] + [answers.get(label_name, '') for label_name in column_names[2:]]
             writer.writerow(row)
 
     response = Response(si.getvalue(), mimetype='text/csv')
