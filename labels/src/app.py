@@ -43,14 +43,15 @@ def create_label():
 
     id = str(uuid4())
     name = request.form.get('name')
+    categories = request.form.get('categories')
     description = request.form.get('description')
     label_type = request.form.get('type')
 
     if name and description and label_type:  # Ensure no empty fields
         tx = graph.begin()
         tx.run("""
-            MERGE (label:Label {id: $id, name: $name, description: $description, type: $type})
-            """, id=id, name=name, description=description, type=label_type)
+            MERGE (label:Label {id: $id, name: $name, categories: $categories, description: $description, type: $type})
+            """, id=id, name=name, categories=categories, description=description, type=label_type)
         tx.commit()
 
     return jsonify({'status': 'success', 'message': 'Label created successfully'})
@@ -69,6 +70,7 @@ def edit_label(id):
         return 'Forbidden', 403
 
     name = request.form.get('name')
+    categories = request.form.get('categories')
     description = request.form.get('description')
     label_type = request.form.get('type')
 
@@ -76,8 +78,8 @@ def edit_label(id):
         tx = graph.begin()
         tx.run("""
             MATCH (label:Label {id: $id})
-            SET label.name = $name, label.description = $description, label.type = $type
-            """, id=id, name=name, description=description, type=label_type)
+            SET label.name = $name, label.categories = $categories, label.description = $description, label.type = $type
+            """, id=id, name=name, categories=categories, description=description, type=label_type)
         tx.commit()
 
     return jsonify({'status': 'success', 'message': 'Label edited successfully'})
@@ -118,7 +120,7 @@ def label_editor():
         return 'Forbidden', 403
 
     q = "MATCH (l:Label) RETURN l.id AS id, l.name AS name,"
-    q = f"{q} l.description AS description, l.type AS type"
+    q = f"{q} l.description AS description, l.type AS type, l.categories AS categories"
     labels = graph.run(q).data()
     labels = list(enumerate(labels, start=1))  # Add index for each label
     return render_template('labels.html', labels=labels, labels_path=os.getenv('LABELS_PATH'))

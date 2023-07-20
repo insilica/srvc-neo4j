@@ -147,7 +147,9 @@
             document.getElementById('name').value = row.querySelector('.name').innerText;
             document.getElementById('description').value = row.querySelector('.description').innerText;
             document.getElementById('type').value = row.querySelector('.type').innerText;
+            document.getElementById('categories').value = row.querySelector('.categories').innerText;
             document.getElementById('myModal').style.display = "block";
+            updateType();
         }
 
         function deleteLabel(id) {
@@ -181,6 +183,16 @@
             .catch(err => console.error(err));
         }
 
+        function updateType() {
+          var type = document.getElementById("type").value;
+          var el = document.getElementById("categories-container");
+          if (type === "categorical") {
+              el.style.display = "block";
+          } else {
+              el.style.display = "none";
+          }
+        }
+
     </script>
 </head>
 <body>
@@ -203,6 +215,7 @@
                         <button onclick="event.stopPropagation(); deleteLabel('{{ label.id }}')">Delete</button>
                         <button onclick="event.stopPropagation(); populateForm(this.parentElement.parentElement, '{{ label.id }}')">Edit</button>
                     </td>
+                    <td class="categories" style="display: none;">{{label.categories}}</td>
                 </tr>
             {% endfor %}
             <tr>
@@ -227,7 +240,15 @@
                 <label for="description">Description</label>
                 <input type="text" id="description" name="description" required>
                 <label for="type">Type</label>
-                <input type="text" id="type" name="type" required>
+                <select id="type" name="type" onchange="updateType()" required>
+                  <option value="boolean">boolean</option>
+                  <option value="categorical">categorical</option>
+                  <option value="text">text</option>
+                </select>
+                <div id="categories-container" style="display: none;">
+                    <label for="categories">Categories (comma-separated)</label>
+                    <input type="text" id="categories" name="categories">
+                </div>
                 <input type="button" value="SUBMIT" onclick="event.preventDefault(); ajaxSubmitForm();">
                 <input type="button" value="CANCEL" onclick="document.getElementById('myModal').style.display = 'none';">
             </form>

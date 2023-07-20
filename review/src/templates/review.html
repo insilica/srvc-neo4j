@@ -178,6 +178,12 @@ table, th, td {
           <label for="label-{{ label['id'] }}" title="{{ label['description'] }}">{{ label['name'] }}</label>
           {% if label['type'] == 'boolean' %}
             <boolean-label id="label-{{ label['id'] }}"></boolean-label>
+          {% elif label['type'] == 'categorical' %}
+          <select id="label-{{ label['id'] }}" name="label-{{ label['id'] }}" title="{{ label['description'] }}">
+            {% for option in label['categories'].split(",") %}
+              <option value="{{ option }}">{{ option }}</option>
+            {% endfor %}
+          </select>
           {% elif label['type'] == 'text' %}
             <input type="text" id="label-{{ label['id'] }}" name="label-{{ label['id'] }}" title="{{ label['description'] }}">
           {% endif %}
