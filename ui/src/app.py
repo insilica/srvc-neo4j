@@ -22,7 +22,7 @@ def embed_response(service_url):
     else:
         response = requests.get(service_url, cookies=request.cookies, allow_redirects=False, params=request.args)
 
-    if not response.headers.get('content-type').startswith('text/html'):
+    if response.status_code >= 299 or not response.headers.get('content-type').startswith('text/html'):
         return Response(response.content, headers=dict(response.headers), status=response.status_code)
 
     soup = BeautifulSoup(response.content, 'html.parser')
