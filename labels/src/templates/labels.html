@@ -141,10 +141,9 @@
         }
 
         function populateForm(row, id) {
-            // TODO update to /delete rather than /labels/delete
             newForm('Edit Label');
             document.getElementById('id').value = id;
-            document.getElementById('create-form').action = "/labels/edit/" + id;
+            document.getElementById('create-form').action = "{{labels_path}}/edit/" + id;
             document.getElementById('name').value = row.querySelector('.name').innerText;
             document.getElementById('description').value = row.querySelector('.description').innerText;
             document.getElementById('type').value = row.querySelector('.type').innerText;
@@ -152,8 +151,7 @@
         }
 
         function deleteLabel(id) {
-            // TODO update to /delete rather than /labels/delete
-            fetch("/labels/delete/" + id, {
+            fetch("{{labels_path}}/delete/" + id, {
                 method: "POST"
             })
             .then(response => location.reload())
