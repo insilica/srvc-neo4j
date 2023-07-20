@@ -75,7 +75,9 @@ table, th, td {
             {% for email, answers in users.items() %}
             <tr>
                 {% if loop.first %}
-                <td rowspan="{{ users|length }}">{{ doc_id }}</td>
+                <td rowspan="{{ users|length }}">
+                  <a href='{{document_path}}/{{ doc_id }}' style="color: #e6e6e6">{{doc_id}}</a>
+                </td>
                 {% endif %}
                 <td>{{ email }}</td>
                 {% for label in labels %}

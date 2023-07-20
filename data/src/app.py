@@ -77,7 +77,7 @@ def list_documents():
         label_id = result['label_id']
         data[doc_id][user_email][label_id] = json2html.convert(answer['answer'])
 
-    return render_template('data.html', data=data, labels=labels)
+    return render_template('data.html', data=data, labels=labels, document_path=os.getenv('DOCUMENT_PATH'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')  # Ensure the server is accessible externally

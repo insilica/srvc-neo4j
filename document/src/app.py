@@ -1,3 +1,4 @@
+from collections import defaultdict
 from flask import Flask, request, render_template, render_template_string, redirect
 from jsonlines.jsonlines import InvalidLineError
 from werkzeug.utils import secure_filename
@@ -68,6 +69,47 @@ def list_documents():
         d['rendered_content'] = render_template_string(template, doc=d)
 
     return render_template('documents.html', documents=documents)
+
+@app.route('/<string:doc_id>')
+def view_document(doc_id):
+    graph = Graph("bolt://neo4j:7687", auth=("neo4j", "test1234"))
+    visibility = get_project_visibility(graph)
+
+    if not visibility or visibility['value'] != 'public':
+        try:
+            email = get_current_email()
+        except:
+            return redirect('/login'), 303
+        user = get_user(graph, email)
+        if not (user and user.get('isMember')):
+            return 'Forbidden', 403
+
+    q = "MATCH (o:Document {id: $id}) return o"
+    result = graph.run(q, id=doc_id).data()
+    if not result:
+      return 'Not Found', 404
+    d = dict(result[0]['o'])
+
+    d['html'] = json2html.convert(d['content'])
+    d['rendered_content'] = render_template_string(template, doc=d)
+
+    q = "MATCH (n:Label) RETURN n"
+    labels = [dict(x)['n'] for x in graph.run(q).data()]
+
+    q = """
+    MATCH (d:Document {id: $id})<-[:HAS_DOCUMENT]-(a:Answer)-[:HAS_USER]->(u:User),
+          (a)-[:HAS_LABEL]->(l:Label)
+    RETURN u.email AS user_email, l.id AS label_id, a AS answer
+    """
+    results = graph.run(q, id=doc_id).data()
+    data = defaultdict(lambda: defaultdict(dict))
+    for result in results:
+        user_email = result["user_email"]
+        answer = result["answer"]
+        label_id = result['label_id']
+        data[user_email][label_id] = json2html.convert(answer['answer'])
+
+    return render_template('document.html', document=d, labels=labels, data=data)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')  # Ensure the server is accessible externally
