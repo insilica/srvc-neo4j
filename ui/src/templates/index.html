@@ -59,6 +59,8 @@
       ];
 
       const pathParts = window.location.pathname.split('/');
+      let user = pathParts[1];
+      let project = pathParts[2];
       const activeTabName = pathParts.length >= 3 ? pathParts[3] : pathParts[1];  // Get the 3rd child of the url
 
       links.forEach(link => {
@@ -71,7 +73,7 @@
         tab.addEventListener('click', () => {
           document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
           tab.classList.add('active');
-          window.location.href = link.url;
+          window.location.href = '/' + user + '/' + project + '/' + link.url;
         });
         sidebar.appendChild(tab);
 
