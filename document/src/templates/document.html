@@ -64,6 +64,24 @@ table, th, td {
     <div class="document">
       <p>{{ document.html | safe }}</p>
     </div>
+    {% if pdfs %}
+      <div class="pdf-tab">
+        {% for pdf in pdfs %}
+        <object data="file/{{ pdf.id }}" type="application/pdf" style="width: 100vw; height: 100vh;">
+            <p>It appears you don't have a PDF plugin for this browser.
+            You can <a href="file/{{ pdf.id }}">click here to download the PDF file.</a></p>
+          </object>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <h2>Upload PDF</h2>
+    <form method="POST" action="../{{document_path}}/pdf-upload" enctype="multipart/form-data">
+      <input type="file" id="pdfUpload" name="pdfUpload" accept=".pdf">
+      <input type="hidden" id="docId" name="docId" value="{{document.id}}">
+      <br>
+      <button type="submit">Upload</button>
+    </form>
   </div>
 
   {% if data %}

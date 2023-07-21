@@ -21,6 +21,7 @@ services:
     build: ../../../document
     volumes:
       - ../../../document:/app
+      - ./document/data:/data
     depends_on:
       - neo4j
     env_file: ./.env
